@@ -3,6 +3,13 @@ import { User, RegisterData, LoginData, UserRole } from '../types/user';
 const USERS_KEY = 'bus_tracker_users';
 const CURRENT_USER_KEY = 'bus_tracker_current_user';
 
+// Role permissions mapping
+const ROLE_PERMISSIONS = {
+  admin: ['manage_buses', 'manage_routes', 'manage_stops', 'manage_drivers', 'manage_users', 'view_reports'],
+  passenger: ['view_routes', 'book_trip', 'view_profile', 'rate_service'],
+  driver: ['update_location', 'report_incident', 'view_assigned_route'],
+};
+
 // Simulated database of users
 export const authService = {
   // Register new user
@@ -98,13 +105,49 @@ export const authService = {
     }
   },
 
+  // Check if user has permission
+  hasPermission: (user: User | null, permission: string): boolean => {
+    if (!user) return false;
+    const userPermissions = ROLE_PERMISSIONS[user.role] || [];
+    return userPermissions.includes(permission);
+  },
+
+  // Get user permissions
+  getUserPermissions: (user: User | null): string[] => {
+    if (!user) return [];
+    return ROLE_PERMISSIONS[user.role] || [];
+  },
+
+  // Update user role (admin only)
+  updateUserRole: (userId: string, newRole: UserRole): User | null => {
+    const users = authService.getAllUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    users[userIndex].role = newRole;
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+    return users[userIndex];
+  },
+
+  // Get users by role
+  getUsersByRole: (role: UserRole): User[] => {
+    const users = authService.getAllUsers();
+    return users.filter(u => u.role === role);
+  },
+
+  // Validate role transition
+  canChangeRole: (currentUser: User | null, targetUserId: string, newRole: UserRole): boolean => {
+    if (!currentUser || currentUser.role !== 'admin') return false;
+    if (currentUser.id === targetUserId) return false; // Can't change own role
+    return true;
+  },
+
   // Check if user is admin
   isAdmin: (user: User | null): boolean => {
     return user?.role === 'admin';
-  },
-
-  // Check if user is passenger
-  isPassenger: (user: User | null): boolean => {
-    return user?.role === 'passenger';
   },
 };

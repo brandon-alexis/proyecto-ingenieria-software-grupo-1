@@ -8,21 +8,24 @@ import {
   MapPin,
   Route,
 } from "lucide-react";
-import { Bus as BusType, Driver, BusStop } from "../types/bus";
+import { Bus as BusType, Driver, BusStop, Route as RouteType } from "../types/bus";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { AdminBusForm } from "./AdminBusForm";
 import { AdminDriverForm } from "./AdminDriverForm";
 import { AdminStopForm } from "./AdminStopForm";
+import { AdminRouteForm } from "./AdminRouteForm";
 import { AdminBusList } from "./AdminBusList";
 import { AdminDriverList } from "./AdminDriverList";
 import { AdminStopList } from "./AdminStopList";
+import { AdminRouteList } from "./AdminRouteList";
 import { AdminBusStopAssignment } from "./AdminBusStopAssignment";
 
 interface AdminPanelProps {
   buses: BusType[];
   drivers: Driver[];
   stops: BusStop[];
+  routes: RouteType[];
   onAddBus: (busData: {
     number: string;
     licensePlate: string;
@@ -43,10 +46,19 @@ interface AdminPanelProps {
     lng: number;
     amenities: string[];
   }) => void;
+  onAddRoute: (routeData: {
+    name: string;
+    number: string;
+    stops: BusStop[];
+    color: string;
+    frequency: string;
+    operatingHours: string;
+  }) => void;
   onAssignStops: (busId: string, stopIds: string[]) => void;
   onDeleteBus?: (busId: string) => void;
   onDeleteDriver?: (driverId: string) => void;
   onDeleteStop?: (stopId: string) => void;
+  onDeleteRoute?: (routeId: string) => void;
   onClose?: () => void;
 }
 
@@ -54,18 +66,22 @@ export function AdminPanel({
   buses,
   drivers,
   stops,
+  routes,
   onAddBus,
   onAddDriver,
   onAddStop,
+  onAddRoute,
   onAssignStops,
   onDeleteBus,
   onDeleteDriver,
   onDeleteStop,
+  onDeleteRoute,
   onClose,
 }: AdminPanelProps) {
   const [showBusForm, setShowBusForm] = useState(false);
   const [showDriverForm, setShowDriverForm] = useState(false);
   const [showStopForm, setShowStopForm] = useState(false);
+  const [showRouteForm, setShowRouteForm] = useState(false);
 
   const handleBusSubmit = (busData: any) => {
     onAddBus(busData);
@@ -80,6 +96,11 @@ export function AdminPanel({
   const handleStopSubmit = (stopData: any) => {
     onAddStop(stopData);
     setShowStopForm(false);
+  };
+
+  const handleRouteSubmit = (routeData: any) => {
+    onAddRoute(routeData);
+    setShowRouteForm(false);
   };
 
   return (
@@ -112,7 +133,7 @@ export function AdminPanel({
         {/* Content */}
         <div className="flex-1 overflow-auto p-4">
           <Tabs defaultValue="buses" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="buses" className="flex items-center gap-2">
                 <Bus className="w-4 h-4" />
                 Buses
@@ -127,7 +148,11 @@ export function AdminPanel({
               </TabsTrigger>
               <TabsTrigger value="routes" className="flex items-center gap-2">
                 <Route className="w-4 h-4" />
-                Recorridos
+                Rutas
+              </TabsTrigger>
+              <TabsTrigger value="assignments" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Asignaciones
               </TabsTrigger>
             </TabsList>
 
@@ -195,6 +220,29 @@ export function AdminPanel({
 
             {/* Routes Tab */}
             <TabsContent value="routes" className="space-y-6">
+              <div className="flex justify-end">
+                <Button onClick={() => setShowRouteForm(!showRouteForm)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  {showRouteForm ? "Ocultar Formulario" : "Nueva Ruta"}
+                </Button>
+              </div>
+
+              {showRouteForm && (
+                <AdminRouteForm
+                  stops={stops}
+                  onSubmit={handleRouteSubmit}
+                  onCancel={() => setShowRouteForm(false)}
+                />
+              )}
+
+              <AdminRouteList
+                routes={routes}
+                onDelete={onDeleteRoute}
+              />
+            </TabsContent>
+
+            {/* Assignments Tab */}
+            <TabsContent value="assignments" className="space-y-6">
               <AdminBusStopAssignment
                 buses={buses}
                 stops={stops}
@@ -206,7 +254,7 @@ export function AdminPanel({
 
         {/* Stats Footer */}
         <div className="bg-white border-t border-slate-200 p-4">
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-semibold text-blue-600">
                 {buses.length}
@@ -226,6 +274,12 @@ export function AdminPanel({
                 {stops.length}
               </div>
               <div className="text-sm text-slate-600">Paradas Registradas</div>
+            </div>
+            <div>
+              <div className="text-2xl font-semibold text-purple-600">
+                {routes.length}
+              </div>
+              <div className="text-sm text-slate-600">Rutas Registradas</div>
             </div>
           </div>
         </div>

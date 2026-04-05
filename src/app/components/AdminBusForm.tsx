@@ -31,7 +31,7 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
     licensePlate: '',
     capacity: '',
     type: 'local' as 'express' | 'local' | 'shuttle',
-    driverId: '',
+    driverId: 'none',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,7 +64,7 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
         licensePlate: formData.licensePlate,
         capacity: parseInt(formData.capacity),
         type: formData.type,
-        driverId: formData.driverId || undefined,
+        driverId: formData.driverId === 'none' ? undefined : formData.driverId,
       });
 
       // Reset form
@@ -73,7 +73,7 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
         licensePlate: '',
         capacity: '',
         type: 'local',
-        driverId: '',
+        driverId: 'none',
       });
       setErrors({});
     }
@@ -102,7 +102,7 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
               id="number"
               placeholder="Ej: A42"
               value={formData.number}
-              onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+              onChange={(e: any) => setFormData({ ...formData, number: e.target.value })}
               className={errors.number ? 'border-red-500' : ''}
             />
             {errors.number && (
@@ -121,7 +121,7 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
               value={formData.licensePlate}
               onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value.toUpperCase() })}
               className={errors.licensePlate ? 'border-red-500' : ''}
-            />
+              />
             {errors.licensePlate && (
               <p className="text-sm text-red-500">{errors.licensePlate}</p>
             )}
@@ -138,7 +138,7 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
               placeholder="Ej: 60"
               min="1"
               value={formData.capacity}
-              onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+              onChange={(e: any) => setFormData({ ...formData, capacity: e.target.value })}
               className={errors.capacity ? 'border-red-500' : ''}
             />
             {errors.capacity && (
@@ -172,13 +172,12 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
           <Label htmlFor="driver">Conductor Asignado (Opcional)</Label>
           <Select
             value={formData.driverId}
-            onValueChange={(value) => setFormData({ ...formData, driverId: value })}
-          >
+            onValueChange={(value: any) => setFormData({ ...formData, driverId: value })}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar conductor..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin conductor asignado</SelectItem>
+              <SelectItem value="none">Sin conductor asignado</SelectItem>
               {drivers.map((driver) => (
                 <SelectItem key={driver.id} value={driver.id}>
                   {driver.name} - {driver.licenseNumber}

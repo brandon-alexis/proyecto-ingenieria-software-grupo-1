@@ -8,6 +8,9 @@ import {
   Settings,
   LogOut,
   User as UserIcon,
+  Bell,
+  AlertTriangle,
+  Star,
 } from "lucide-react";
 import { BusMapLeaflet } from "./components/BusMapLeaflet";
 import { BusCard } from "./components/BusCard";
@@ -16,6 +19,9 @@ import { StopDetails } from "./components/StopDetails";
 import { BusDetails } from "./components/BusDetails";
 import { SearchBar } from "./components/SearchBar";
 import { AdminPanel } from "./components/AdminPanel";
+import { NotificationPanel } from "./components/NotificationPanel";
+import { IncidentReportForm } from "./components/IncidentReportForm";
+import { RatingForm } from "./components/RatingForm";
 import { LoginForm } from "./components/LoginForm";
 import { RegisterForm } from "./components/RegisterForm";
 import {
@@ -24,31 +30,47 @@ import {
   routes as mockRoutes,
   drivers as mockDrivers,
 } from "./data/mockData";
-import { Bus as BusType, BusStop, Route, Driver } from "./types/bus";
+import { Bus as BusType, BusStop, Route as RouteType, Driver } from "./types/bus";
 import { User, LoginData, RegisterData } from "./types/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Button } from "./components/ui/button";
 import { authService } from "./services/authService";
+import { busService } from "./services/busService";
+import { stopService } from "./services/stopService";
+import { routeService } from "./services/routeService";
+import { notificationService } from "./services/notificationService";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [authError, setAuthError] = useState<string>("");
-  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<RouteType | null>(null);
   const [selectedStop, setSelectedStop] = useState<BusStop | null>(null);
   const [selectedBus, setSelectedBus] = useState<BusType | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showIncidentForm, setShowIncidentForm] = useState(false);
+  const [showRatingForm, setShowRatingForm] = useState(false);
 
   // State for managing buses, drivers, and stops
-  const [buses, setBuses] = useState<BusType[]>(mockBuses);
+  const [buses, setBuses] = useState<BusType[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>(mockDrivers);
-  const [stops, setStops] = useState<BusStop[]>(mockStops);
+  const [stops, setStops] = useState<BusStop[]>([]);
+  const [routes, setRoutes] = useState<RouteType[]>([]);
 
-  // Initialize auth service
+  // Initialize services
   useEffect(() => {
     authService.initializeDefaultUsers();
+    busService.initializeMockData(mockBuses);
+    stopService.initializeMockData(mockStops);
+    routeService.initializeMockData(mockRoutes);
+
+    // Load data from services
+    setBuses(busService.getAllBuses());
+    setStops(stopService.getAllStops());
+    setRoutes(routeService.getAllRoutes());
   }, []);
 
   // Simulate real-time bus updates (every 5 seconds)
@@ -118,26 +140,30 @@ export default function App() {
     type: "express" | "local" | "shuttle";
     driverId?: string;
   }) => {
-    const driver = busData.driverId
-      ? drivers.find((d) => d.id === busData.driverId)
-      : undefined;
+    try {
+      const driver = busData.driverId
+        ? drivers.find((d) => d.id === busData.driverId)
+        : undefined;
 
-    const newBus: BusType = {
-      id: `bus-${Date.now()}`,
-      number: busData.number,
-      licensePlate: busData.licensePlate,
-      capacity: busData.capacity,
-      currentOccupancy: 0,
-      status: "on-time",
-      currentLocation: { lat: 40.7128, lng: -74.006 },
-      nextStop: "Downtown Transit Center",
-      estimatedArrival: "5 min",
-      type: busData.type,
-      driver,
-      assignedStops: [],
-    };
+      const newBusData = {
+        number: busData.number,
+        licensePlate: busData.licensePlate,
+        capacity: busData.capacity,
+        currentOccupancy: 0,
+        status: "on-time" as const,
+        currentLocation: { lat: 40.7128, lng: -74.006 },
+        nextStop: "Downtown Transit Center",
+        estimatedArrival: "5 min",
+        type: busData.type,
+        driver,
+        assignedStops: [],
+      };
 
-    setBuses([...buses, newBus]);
+      const newBus = busService.createBus(newBusData);
+      setBuses([...buses, newBus]);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al crear bus");
+    }
   };
 
   // Add new driver
@@ -163,32 +189,63 @@ export default function App() {
     lng: number;
     amenities: string[];
   }) => {
-    const newStop: BusStop = {
-      id: `stop-${Date.now()}`,
-      name: stopData.name,
-      address: stopData.address,
-      location: {
-        lat: stopData.lat,
-        lng: stopData.lng,
-      },
-      amenities: stopData.amenities,
-    };
+    try {
+      const newStopData = {
+        name: stopData.name,
+        location: {
+          lat: stopData.lat,
+          lng: stopData.lng,
+        },
+        amenities: stopData.amenities,
+        address: stopData.address,
+      };
 
-    setStops([...stops, newStop]);
+      const newStop = stopService.createStop(newStopData);
+      setStops([...stops, newStop]);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al crear parada");
+    }
+  };
+
+  // Add new route
+  const handleAddRoute = (routeData: {
+    name: string;
+    number: string;
+    stops: BusStop[];
+    color: string;
+    frequency: string;
+    operatingHours: string;
+  }) => {
+    try {
+      const newRoute = routeService.createRoute(routeData);
+      setRoutes([...routes, newRoute]);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al crear ruta");
+    }
   };
 
   // Assign stops to bus
   const handleAssignStops = (busId: string, stopIds: string[]) => {
-    setBuses(
-      buses.map((bus) =>
-        bus.id === busId ? { ...bus, assignedStops: stopIds } : bus,
-      ),
-    );
+    try {
+      busService.updateBus(busId, { assignedStops: stopIds });
+      setBuses(
+        buses.map((bus) =>
+          bus.id === busId ? { ...bus, assignedStops: stopIds } : bus,
+        ),
+      );
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al asignar paradas");
+    }
   };
 
   // Delete bus
   const handleDeleteBus = (busId: string) => {
-    setBuses(buses.filter((bus) => bus.id !== busId));
+    try {
+      busService.deleteBus(busId);
+      setBuses(buses.filter((bus) => bus.id !== busId));
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al eliminar bus");
+    }
   };
 
   // Delete driver
@@ -204,14 +261,29 @@ export default function App() {
 
   // Delete stop
   const handleDeleteStop = (stopId: string) => {
-    setStops(stops.filter((stop) => stop.id !== stopId));
-    // Remove stop assignment from buses
-    setBuses(
-      buses.map((bus) => ({
-        ...bus,
-        assignedStops: bus.assignedStops?.filter((id) => id !== stopId) || [],
-      })),
-    );
+    try {
+      stopService.deleteStop(stopId);
+      setStops(stops.filter((stop) => stop.id !== stopId));
+      // Remove stop assignment from buses
+      setBuses(
+        buses.map((bus) => ({
+          ...bus,
+          assignedStops: bus.assignedStops?.filter((id) => id !== stopId) || [],
+        })),
+      );
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al eliminar parada");
+    }
+  };
+
+  // Delete route
+  const handleDeleteRoute = (routeId: string) => {
+    try {
+      routeService.deleteRoute(routeId);
+      setRoutes(routes.filter((route) => route.id !== routeId));
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al eliminar ruta");
+    }
   };
 
   // Filter buses based on search query
@@ -229,15 +301,15 @@ export default function App() {
 
   // Filter routes based on search query
   const filteredRoutes = useMemo(() => {
-    if (!searchQuery) return mockRoutes;
+    if (!searchQuery) return routes;
 
     const query = searchQuery.toLowerCase();
-    return mockRoutes.filter(
+    return routes.filter(
       (route) =>
         route.number.toLowerCase().includes(query) ||
         route.name.toLowerCase().includes(query),
     );
-  }, [searchQuery]);
+  }, [searchQuery, routes]);
 
   // Filter stops based on search query
   const filteredStops = useMemo(() => {
@@ -524,13 +596,16 @@ export default function App() {
           buses={buses}
           drivers={drivers}
           stops={stops}
+          routes={routes}
           onAddBus={handleAddBus}
           onAddDriver={handleAddDriver}
           onAddStop={handleAddStop}
+          onAddRoute={handleAddRoute}
           onAssignStops={handleAssignStops}
           onDeleteBus={handleDeleteBus}
           onDeleteDriver={handleDeleteDriver}
           onDeleteStop={handleDeleteStop}
+          onDeleteRoute={handleDeleteRoute}
           onClose={() => setShowAdmin(false)}
         />
       )}
@@ -559,14 +634,76 @@ export default function App() {
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowNotifications(true)}
+              className="relative"
+            >
+              <Bell className="w-4 h-4" />
+              {notificationService.getUnreadCount(currentUser.id) > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {notificationService.getUnreadCount(currentUser.id)}
+                </span>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowIncidentForm(true)}
+            >
+              <AlertTriangle className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowRatingForm(true)}
+            >
+              <Star className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Panel */}
+      <NotificationPanel
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
+
+      {/* Incident Report Form */}
+      {showIncidentForm && (
+        <div className="fixed inset-0 bg-black/50 z-[1100] flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <IncidentReportForm
+              onSubmit={() => setShowIncidentForm(false)}
+              onCancel={() => setShowIncidentForm(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Rating Form */}
+      {showRatingForm && (
+        <div className="fixed inset-0 bg-black/50 z-[1100] flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <RatingForm
+              type="service"
+              targetId="general"
+              targetName="Servicio General"
+              onSubmit={() => setShowRatingForm(false)}
+              onCancel={() => setShowRatingForm(false)}
+            />
+          </div>
         </div>
       )}
     </div>
