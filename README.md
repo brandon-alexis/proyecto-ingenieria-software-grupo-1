@@ -1,6 +1,7 @@
 <div align="center">
 
 # Bus Web Application
+## **Bus Traker**
 
 Sistema de gestión de transporte público con geolocalización en tiempo real, rutas, pagos y gestión de usuarios.
 
