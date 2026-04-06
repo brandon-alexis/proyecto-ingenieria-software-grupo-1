@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'passenger';
+export type UserRole = 'admin' | 'passenger' | 'driver';
 
 export interface User {
   id: string;
@@ -7,6 +7,7 @@ export interface User {
   role: UserRole;
   phone?: string;
   createdAt: string;
+  licenseNumber?: string; // For drivers
 }
 
 export interface RegisterData {

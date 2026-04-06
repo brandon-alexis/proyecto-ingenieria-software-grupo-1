@@ -24,6 +24,8 @@ import { IncidentReportForm } from "./components/IncidentReportForm";
 import { RatingForm } from "./components/RatingForm";
 import { LoginForm } from "./components/LoginForm";
 import { RegisterForm } from "./components/RegisterForm";
+import { BusBoarding } from "./components/BusBoarding";
+import { DriverIncidentPanel } from "./components/DriverIncidentPanel";
 import {
   buses as mockBuses,
   busStops as mockStops,
@@ -31,9 +33,10 @@ import {
   drivers as mockDrivers,
 } from "./data/mockData";
 import { Bus as BusType, BusStop, Route as RouteType, Driver } from "./types/bus";
-import { User, LoginData, RegisterData } from "./types/user";
+import { User, LoginData, RegisterData, UserRole } from "./types/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Button } from "./components/ui/button";
+import { Card } from "./components/ui/card";
 import { authService } from "./services/authService";
 import { busService } from "./services/busService";
 import { stopService } from "./services/stopService";
@@ -53,6 +56,8 @@ export default function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showIncidentForm, setShowIncidentForm] = useState(false);
   const [showRatingForm, setShowRatingForm] = useState(false);
+  const [showBusBoarding, setShowBusBoarding] = useState(false);
+  const [showDriverPanel, setShowDriverPanel] = useState(false);
 
   // State for managing buses, drivers, and stops
   const [buses, setBuses] = useState<BusType[]>([]);
@@ -110,9 +115,9 @@ export default function App() {
   };
 
   // Handle register
-  const handleRegister = (data: RegisterData) => {
+  const handleRegister = (data: RegisterData, role: UserRole = 'passenger') => {
     try {
-      const user = authService.register(data, "passenger");
+      const user = authService.register(data, role);
       setCurrentUser(user);
       setAuthError("");
     } catch (error) {
@@ -246,6 +251,25 @@ export default function App() {
     } catch (error) {
       alert(error instanceof Error ? error.message : "Error al eliminar bus");
     }
+  };
+
+  // Handle passenger boarding
+  const handlePassengerBoarding = (busId: string, paymentSuccess: boolean) => {
+    if (!paymentSuccess) return;
+
+    // Update bus occupancy
+    const updatedBuses = buses.map(bus => {
+      if (bus.id === busId && bus.currentOccupancy < bus.capacity) {
+        return {
+          ...bus,
+          currentOccupancy: bus.currentOccupancy + 1,
+        };
+      }
+      return bus;
+    });
+
+    setBuses(updatedBuses);
+    setShowBusBoarding(false);
   };
 
   // Delete driver
@@ -398,6 +422,35 @@ export default function App() {
               >
                 <Settings className="w-5 h-5 text-slate-700" />
               </button>
+            )}
+            {currentUser?.role === 'passenger' && (
+              <button
+                onClick={() => setShowBusBoarding(true)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Subirse a un Bus"
+              >
+                <Bus className="w-5 h-5 text-slate-700" />
+              </button>
+            )}
+            {currentUser?.role === 'driver' && (
+              <button
+                onClick={() => setShowDriverPanel(true)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Reportes de Incidentes"
+              >
+                <AlertTriangle className="w-5 h-5 text-slate-700" />
+              </button>
+            )}
+            {currentUser && (
+              <>
+                <button
+                  onClick={() => setShowNotifications(true)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative"
+                  title="Notificaciones"
+                >
+                  <Bell className="w-5 h-5 text-slate-700" />
+                </button>
+              </>
             )}
             {currentUser && (
               <>
@@ -703,6 +756,50 @@ export default function App() {
               onSubmit={() => setShowRatingForm(false)}
               onCancel={() => setShowRatingForm(false)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Bus Boarding Panel */}
+      {showBusBoarding && (
+        <div className="fixed inset-0 bg-black/50 z-[1100] flex items-center justify-center p-4 overflow-auto">
+          <div className="w-full max-w-2xl my-4">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">Subirse a un Bus</h2>
+                <button
+                  onClick={() => setShowBusBoarding(false)}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <BusBoarding
+                buses={buses}
+                currentUser={currentUser}
+                onBoarding={handlePassengerBoarding}
+              />
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Driver Incident Panel */}
+      {showDriverPanel && (
+        <div className="fixed inset-0 bg-black/50 z-[1100] flex items-center justify-center p-4 overflow-auto">
+          <div className="w-full max-w-2xl my-4">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">Panel del Conductor</h2>
+                <button
+                  onClick={() => setShowDriverPanel(false)}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <DriverIncidentPanel currentUser={currentUser} />
+            </Card>
           </div>
         </div>
       )}

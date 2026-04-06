@@ -1,41 +1,29 @@
 import { useState } from 'react';
-import { AlertTriangle, Send } from 'lucide-react';
-import { incidentService, IncidentType } from '../services/incidentService';
+import { AlertTriangle, Send, X } from 'lucide-react';
+import { incidentService } from '../services/incidentService';
 import { authService } from '../services/authService';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Textarea } from './ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
 
 interface IncidentReportFormProps {
   busId?: string;
-  driverId?: string;
-  stopId?: string;
-  routeId?: string;
   onSubmit?: () => void;
   onCancel?: () => void;
 }
 
 export function IncidentReportForm({
   busId,
-  driverId,
-  stopId,
-  routeId,
   onSubmit,
   onCancel
 }: IncidentReportFormProps) {
   const [formData, setFormData] = useState({
-    type: 'other' as IncidentType,
+    title: '',
+    category: 'accident' as 'accident' | 'mechanical' | 'traffic' | 'passenger' | 'other',
     description: '',
-    severity: 'medium' as 'low' | 'medium' | 'high' | 'critical',
+    severity: 'medium' as 'low' | 'medium' | 'high',
+    location: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,6 +33,10 @@ export function IncidentReportForm({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'El título es requerido';
+    }
 
     if (!formData.description.trim()) {
       newErrors.description = 'La descripción es requerida';
@@ -71,38 +63,27 @@ export function IncidentReportForm({
     setIsSubmitting(true);
 
     try {
-      const validation = incidentService.validateIncidentReport({
-        type: formData.type,
+      const incident = incidentService.createIncident({
+        title: formData.title,
         description: formData.description,
+        category: formData.category,
         severity: formData.severity,
-        busId,
-        driverId,
-        stopId,
-        routeId,
+        busId: busId || formData.title,
+        location: formData.location,
+        status: 'open',
+        reportedBy: currentUser.id,
+        timestamp: new Date().toISOString(),
       });
-
-      if (!validation.valid) {
-        setErrors({ description: validation.errors.join(', ') });
-        return;
-      }
-
-      const incident = incidentService.reportIncident({
-        type: formData.type,
-        description: formData.description,
-        severity: formData.severity,
-        busId,
-        driverId,
-        stopId,
-        routeId,
-      }, currentUser.id);
 
       alert('Incidente reportado exitosamente');
 
       // Reset form
       setFormData({
-        type: 'other',
+        title: '',
+        category: 'accident',
         description: '',
         severity: 'medium',
+        location: '',
       });
       setErrors({});
 
@@ -127,27 +108,41 @@ export function IncidentReportForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="title">
+            Título <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="title"
+            type="text"
+            placeholder="Resumen breve del incidente"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className={errors.title ? 'border-red-500' : ''}
+          />
+          {errors.title && (
+            <p className="text-sm text-red-500">{errors.title}</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Incident Type */}
+          {/* Incident Category */}
           <div className="space-y-2">
-            <Label htmlFor="type">
-              Tipo de Incidente <span className="text-red-500">*</span>
+            <Label htmlFor="category">
+              Categoría <span className="text-red-500">*</span>
             </Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value: IncidentType) => setFormData({ ...formData, type: value })}
+            <select
+              id="category"
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mechanical">Problema Mecánico</SelectItem>
-                <SelectItem value="traffic">Tráfico</SelectItem>
-                <SelectItem value="passenger">Problema con Pasajero</SelectItem>
-                <SelectItem value="driver">Problema con Conductor</SelectItem>
-                <SelectItem value="other">Otro</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="accident">Accidente</option>
+              <option value="mechanical">Problema Mecánico</option>
+              <option value="traffic">Congestión de Tráfico</option>
+              <option value="passenger">Problema con Pasajero</option>
+              <option value="other">Otro</option>
+            </select>
           </div>
 
           {/* Severity */}
@@ -155,66 +150,78 @@ export function IncidentReportForm({
             <Label htmlFor="severity">
               Severidad <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <select
+              id="severity"
               value={formData.severity}
-              onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') =>
-                setFormData({ ...formData, severity: value })
-              }
+              onChange={(e) => setFormData({ ...formData, severity: e.target.value as any })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Baja</SelectItem>
-                <SelectItem value="medium">Media</SelectItem>
-                <SelectItem value="high">Alta</SelectItem>
-                <SelectItem value="critical">Crítica</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="low">Baja</option>
+              <option value="medium">Media</option>
+              <option value="high">Alta</option>
+            </select>
           </div>
         </div>
 
         {/* Description */}
         <div className="space-y-2">
           <Label htmlFor="description">
-            Descripción <span className="text-red-500">*</span>
+            Descripción Detallada <span className="text-red-500">*</span>
           </Label>
-          <Textarea
+          <textarea
             id="description"
             placeholder="Describe el incidente en detalle..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className={`min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
+            className={`w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
           />
           {errors.description && (
             <p className="text-sm text-red-500">{errors.description}</p>
           )}
         </div>
 
+        {/* Location */}
+        <div className="space-y-2">
+          <Label htmlFor="location">Ubicación (Opcional)</Label>
+          <Input
+            id="location"
+            type="text"
+            placeholder="Calle y número"
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+          />
+        </div>
+
         {/* Context Info */}
-        {(busId || driverId || stopId || routeId) && (
+        {busId && (
           <div className="bg-slate-50 p-3 rounded border">
             <p className="text-sm text-slate-600">
-              <strong>Contexto del reporte:</strong>
-              {busId && ` Bus ID: ${busId}`}
-              {driverId && ` Conductor ID: ${driverId}`}
-              {stopId && ` Parada ID: ${stopId}`}
-              {routeId && ` Ruta ID: ${routeId}`}
+              <strong>Bus reportado:</strong> {busId}
             </p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4">
-          <Button type="submit" disabled={isSubmitting} className="flex-1">
-            <Send className="w-4 h-4 mr-2" />
-            {isSubmitting ? 'Enviando...' : 'Reportar Incidente'}
-          </Button>
+        <div className="flex gap-2 pt-4">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button
+              type="button"
+              onClick={onCancel}
+              variant="outline"
+              className="flex-1"
+            >
+              <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
           )}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1"
+          >
+            <Send className="w-4 h-4 mr-2" />
+            {isSubmitting ? 'Enviando...' : 'Enviar Reporte'}
+          </Button>
         </div>
       </form>
     </Card>
