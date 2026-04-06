@@ -6,9 +6,10 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { RegisterData } from '../types/user';
 import { UserRole } from '../types/user';
+import { sileo } from 'sileo';
 
 interface RegisterFormProps {
-  onRegister: (data: RegisterData, role: UserRole) => void;
+  onRegister: (data: RegisterData, role: UserRole, licenseNumber?: string) => void;
   onSwitchToLogin: () => void;
   error?: string;
 }
@@ -45,7 +46,20 @@ export function RegisterForm({ onRegister, onSwitchToLogin, error }: RegisterFor
       return;
     }
 
-    onRegister(formData, selectedRole);
+    try {
+      onRegister(formData, selectedRole, selectedRole === 'driver' ? licenseNumber : undefined);
+      sileo.success({
+        title: 'Cuenta creada exitosamente',
+        description: `Bienvenido ${formData.name}, tu cuenta de ${selectedRole === 'passenger' ? 'pasajero' : 'conductor'} ha sido creada.`,
+        duration: 5000,
+      });
+    } catch (error) {
+      sileo.error({
+        title: 'Error al crear cuenta',
+        description: error instanceof Error ? error.message : 'Ocurrió un error inesperado',
+        duration: 5000,
+      });
+    }
   };
 
   return (

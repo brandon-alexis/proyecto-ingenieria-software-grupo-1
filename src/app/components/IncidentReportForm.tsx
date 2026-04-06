@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { sileo } from 'sileo';
 
 interface IncidentReportFormProps {
   busId?: string;
@@ -54,7 +55,10 @@ export function IncidentReportForm({
     e.preventDefault();
 
     if (!currentUser) {
-      alert('Debe iniciar sesión para reportar incidentes');
+      sileo.error({
+        title: 'Inicio de Sesión Requerido',
+        description: 'Debe iniciar sesión para reportar incidentes',
+      });
       return;
     }
 
@@ -75,7 +79,10 @@ export function IncidentReportForm({
         timestamp: new Date().toISOString(),
       });
 
-      alert('Incidente reportado exitosamente');
+      sileo.success({
+        title: 'Incidente Reportado',
+        description: 'El incidente ha sido reportado exitosamente',
+      });
 
       // Reset form
       setFormData({
@@ -89,7 +96,10 @@ export function IncidentReportForm({
 
       onSubmit?.();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al reportar incidente');
+      sileo.error({
+        title: 'Error al Reportar',
+        description: error instanceof Error ? error.message : 'Error al reportar incidente',
+      });
     } finally {
       setIsSubmitting(false);
     }

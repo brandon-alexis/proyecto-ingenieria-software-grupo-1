@@ -59,6 +59,14 @@ interface AdminPanelProps {
   onDeleteDriver?: (driverId: string) => void;
   onDeleteStop?: (stopId: string) => void;
   onDeleteRoute?: (routeId: string) => void;
+  onEditBus?: (busData: {
+    id: string;
+    number: string;
+    licensePlate: string;
+    capacity: number;
+    type: "express" | "local" | "shuttle";
+    driverId?: string;
+  }) => void;
   onClose?: () => void;
 }
 
@@ -76,16 +84,30 @@ export function AdminPanel({
   onDeleteDriver,
   onDeleteStop,
   onDeleteRoute,
+  onEditBus,
   onClose,
 }: AdminPanelProps) {
   const [showBusForm, setShowBusForm] = useState(false);
   const [showDriverForm, setShowDriverForm] = useState(false);
   const [showStopForm, setShowStopForm] = useState(false);
   const [showRouteForm, setShowRouteForm] = useState(false);
+  const [editingBus, setEditingBus] = useState<BusType | null>(null);
 
   const handleBusSubmit = (busData: any) => {
-    onAddBus(busData);
+    if (editingBus) {
+      // Editing existing bus
+      onEditBus?.({ ...busData, id: editingBus.id });
+      setEditingBus(null);
+    } else {
+      // Creating new bus
+      onAddBus(busData);
+    }
     setShowBusForm(false);
+  };
+
+  const handleEditBus = (bus: BusType) => {
+    setEditingBus(bus);
+    setShowBusForm(true);
   };
 
   const handleDriverSubmit = (driverData: any) => {
@@ -159,7 +181,10 @@ export function AdminPanel({
             {/* Buses Tab */}
             <TabsContent value="buses" className="space-y-6">
               <div className="flex justify-end">
-                <Button onClick={() => setShowBusForm(!showBusForm)}>
+                <Button onClick={() => {
+                  setShowBusForm(!showBusForm);
+                  if (showBusForm) setEditingBus(null);
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   {showBusForm ? "Ocultar Formulario" : "Nuevo Bus"}
                 </Button>
@@ -169,13 +194,24 @@ export function AdminPanel({
                 <AdminBusForm
                   drivers={drivers}
                   onSubmit={handleBusSubmit}
-                  onCancel={() => setShowBusForm(false)}
+                  onCancel={() => {
+                    setShowBusForm(false);
+                    setEditingBus(null);
+                  }}
+                  initialData={editingBus ? {
+                    number: editingBus.number,
+                    licensePlate: editingBus.licensePlate,
+                    capacity: editingBus.capacity,
+                    type: editingBus.type,
+                    driverId: editingBus.driver?.id,
+                  } : undefined}
                 />
               )}
 
               <AdminBusList
                 buses={buses}
                 stops={stops}
+                onEdit={handleEditBus}
                 onDelete={onDeleteBus}
               />
             </TabsContent>

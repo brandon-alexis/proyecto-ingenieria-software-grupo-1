@@ -3,3 +3,15 @@
 @import './theme.css';
 @import 'leaflet/dist/leaflet.css';
 @import './map.css';
+
+/* Sileo Toast Customizations */
+[data-sileo],
+[data-sileo] * {
+  z-index: 9999 !important;
+}
+
+/* Additional z-index for toast containers */
+.fixed,
+.absolute {
+  z-index: 9999 !important;
+}

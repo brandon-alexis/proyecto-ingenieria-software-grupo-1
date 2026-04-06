@@ -61,7 +61,7 @@ export function AdminRouteForm({ stops, onSubmit, onCancel }: AdminRouteFormProp
     e.preventDefault();
 
     if (validate()) {
-      const selectedStops = formData.selectedStopIds.map(id => stops.find(s => s.id === id)!).filter(Boolean);
+      const selectedStops = formData.selectedStopIds.map(id => stops?.find(s => s.id === id)!).filter(Boolean);
 
       onSubmit({
         name: formData.name,
@@ -188,7 +188,7 @@ export function AdminRouteForm({ stops, onSubmit, onCancel }: AdminRouteFormProp
             Paradas de la Ruta <span className="text-red-500">*</span>
           </Label>
           <div className="max-h-48 overflow-y-auto border rounded p-3 space-y-2">
-            {stops.map((stop) => (
+            {stops?.map((stop) => (
               <label key={stop.id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded">
                 <input
                   type="checkbox"

@@ -6,9 +6,10 @@ import { Progress } from './ui/progress';
 interface BusDetailsProps {
   bus: Bus;
   onClose: () => void;
+  onTrackBus?: (bus: Bus) => void;
 }
 
-export function BusDetails({ bus, onClose }: BusDetailsProps) {
+export function BusDetails({ bus, onClose, onTrackBus }: BusDetailsProps) {
   const occupancyPercentage = (bus.currentOccupancy / bus.capacity) * 100;
 
   const getOccupancyStatus = () => {
@@ -149,7 +150,10 @@ export function BusDetails({ bus, onClose }: BusDetailsProps) {
 
         {/* Actions */}
         <div className="pt-2 border-t">
-          <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+          <button 
+            onClick={() => onTrackBus?.(bus)}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
             Track This Bus
           </button>
         </div>

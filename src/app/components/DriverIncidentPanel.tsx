@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { AlertTriangle, Plus, X } from 'lucide-react';
 import { incidentService, Incident } from '../services/incidentService';
+import { sileo } from 'sileo';
 
 interface DriverIncidentPanelProps {
   currentUser: User | null;
@@ -37,6 +38,10 @@ export function DriverIncidentPanel({ currentUser }: DriverIncidentPanelProps) {
 
     if (!formData.title || !formData.description) {
       setSubmitError('Por favor completa todos los campos requeridos');
+      sileo.error({
+        title: 'Error de Validación',
+        description: 'Por favor completa todos los campos requeridos',
+      });
       return;
     }
 
@@ -58,8 +63,16 @@ export function DriverIncidentPanel({ currentUser }: DriverIncidentPanelProps) {
         location: '',
       });
       setShowForm(false);
+      sileo.success({
+        title: 'Incidente Reportado',
+        description: 'El incidente ha sido reportado exitosamente',
+      });
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Error al crear el reporte');
+      sileo.error({
+        title: 'Error al Reportar',
+        description: error instanceof Error ? error.message : 'Error al crear el reporte',
+      });
     }
   };
 

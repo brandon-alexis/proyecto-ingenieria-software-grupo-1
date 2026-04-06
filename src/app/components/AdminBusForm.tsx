@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bus, Save, X } from 'lucide-react';
 import { Driver } from '../types/bus';
 import { Label } from './ui/label';
@@ -23,9 +23,16 @@ interface AdminBusFormProps {
     driverId?: string;
   }) => void;
   onCancel?: () => void;
+  initialData?: {
+    number: string;
+    licensePlate: string;
+    capacity: number;
+    type: 'express' | 'local' | 'shuttle';
+    driverId?: string;
+  };
 }
 
-export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps) {
+export function AdminBusForm({ drivers, onSubmit, onCancel, initialData }: AdminBusFormProps) {
   const [formData, setFormData] = useState({
     number: '',
     licensePlate: '',
@@ -35,6 +42,28 @@ export function AdminBusForm({ drivers, onSubmit, onCancel }: AdminBusFormProps)
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Initialize form with data when editing
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        number: initialData.number,
+        licensePlate: initialData.licensePlate,
+        capacity: initialData.capacity.toString(),
+        type: initialData.type,
+        driverId: initialData.driverId || 'none',
+      });
+    } else {
+      // Reset form when creating new bus
+      setFormData({
+        number: '',
+        licensePlate: '',
+        capacity: '',
+        type: 'local',
+        driverId: 'none',
+      });
+    }
+  }, [initialData]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};

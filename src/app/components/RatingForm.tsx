@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
+import { sileo } from 'sileo';
 
 interface RatingFormProps {
   type: Rating['type'];
@@ -27,12 +28,18 @@ export function RatingForm({ type, targetId, targetName, onSubmit, onCancel }: R
     e.preventDefault();
 
     if (!currentUser) {
-      alert('Debe iniciar sesión para calificar');
+      sileo.error({
+        title: 'Inicio de Sesión Requerido',
+        description: 'Debe iniciar sesión para calificar',
+      });
       return;
     }
 
     if (rating === 0) {
-      alert('Por favor seleccione una calificación');
+      sileo.error({
+        title: 'Calificación Requerida',
+        description: 'Por favor seleccione una calificación',
+      });
       return;
     }
 
@@ -41,7 +48,10 @@ export function RatingForm({ type, targetId, targetName, onSubmit, onCancel }: R
     try {
       // Check if user already rated
       if (ratingService.hasUserRated(currentUser.id, type, targetId)) {
-        alert('Ya ha calificado este elemento');
+        sileo.error({
+          title: 'Calificación Duplicada',
+          description: 'Ya ha calificado este elemento',
+        });
         return;
       }
 
@@ -53,7 +63,10 @@ export function RatingForm({ type, targetId, targetName, onSubmit, onCancel }: R
         type,
       });
 
-      alert('Calificación enviada exitosamente');
+      sileo.success({
+        title: 'Calificación Enviada',
+        description: 'Su calificación ha sido enviada exitosamente',
+      });
 
       // Reset form
       setRating(0);
@@ -62,7 +75,10 @@ export function RatingForm({ type, targetId, targetName, onSubmit, onCancel }: R
 
       onSubmit?.();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al enviar calificación');
+      sileo.error({
+        title: 'Error al Enviar',
+        description: error instanceof Error ? error.message : 'Error al enviar calificación',
+      });
     } finally {
       setIsSubmitting(false);
     }

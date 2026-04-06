@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { LoginData } from '../types/user';
+import { sileo } from 'sileo';
 
 interface LoginFormProps {
   onLogin: (data: LoginData) => void;
@@ -20,7 +21,20 @@ export function LoginForm({ onLogin, onSwitchToRegister, error }: LoginFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(formData);
+    try {
+      onLogin(formData);
+      sileo.success({
+        title: 'Inicio de sesión exitoso',
+        description: 'Bienvenido de vuelta a BusTracker Pro',
+        duration: 3000,
+      });
+    } catch (error) {
+      sileo.error({
+        title: 'Error al iniciar sesión',
+        description: error instanceof Error ? error.message : 'Credenciales incorrectas',
+        duration: 5000,
+      });
+    }
   };
 
   return (

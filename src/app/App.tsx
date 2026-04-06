@@ -42,6 +42,7 @@ import { busService } from "./services/busService";
 import { stopService } from "./services/stopService";
 import { routeService } from "./services/routeService";
 import { notificationService } from "./services/notificationService";
+import { sileo } from 'sileo';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -57,6 +58,7 @@ export default function App() {
   const [showIncidentForm, setShowIncidentForm] = useState(false);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [showBusBoarding, setShowBusBoarding] = useState(false);
+  const [initialBusForBoarding, setInitialBusForBoarding] = useState<BusType | null>(null);
   const [showDriverPanel, setShowDriverPanel] = useState(false);
 
   // State for managing buses, drivers, and stops
@@ -115,11 +117,24 @@ export default function App() {
   };
 
   // Handle register
-  const handleRegister = (data: RegisterData, role: UserRole = 'passenger') => {
+  const handleRegister = (data: RegisterData, role: UserRole = 'passenger', licenseNumber?: string) => {
     try {
       const user = authService.register(data, role);
       setCurrentUser(user);
       setAuthError("");
+
+      // If registering as driver, also create a driver entry
+      if (role === 'driver' && licenseNumber) {
+        const newDriver: Driver = {
+          id: `driver-${user.id}`,
+          name: user.name,
+          licenseNumber: licenseNumber,
+          phone: user.phone || '',
+          email: user.email,
+        };
+
+        setDrivers([...drivers, newDriver]);
+      }
     } catch (error) {
       setAuthError(
         error instanceof Error ? error.message : "Error al registrarse",
@@ -166,8 +181,15 @@ export default function App() {
 
       const newBus = busService.createBus(newBusData);
       setBuses([...buses, newBus]);
+      sileo.success({
+        title: 'Bus Creado',
+        description: `El bus ${busData.number} ha sido creado exitosamente`,
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al crear bus");
+      sileo.error({
+        title: 'Error al Crear Bus',
+        description: error instanceof Error ? error.message : "Error al crear bus",
+      });
     }
   };
 
@@ -207,8 +229,15 @@ export default function App() {
 
       const newStop = stopService.createStop(newStopData);
       setStops([...stops, newStop]);
+      sileo.success({
+        title: 'Parada Creada',
+        description: `La parada ${stopData.name} ha sido creada exitosamente`,
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al crear parada");
+      sileo.error({
+        title: 'Error al Crear Parada',
+        description: error instanceof Error ? error.message : "Error al crear parada",
+      });
     }
   };
 
@@ -224,8 +253,15 @@ export default function App() {
     try {
       const newRoute = routeService.createRoute(routeData);
       setRoutes([...routes, newRoute]);
+      sileo.success({
+        title: 'Ruta Creada',
+        description: `La ruta ${routeData.name} ha sido creada exitosamente`,
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al crear ruta");
+      sileo.error({
+        title: 'Error al Crear Ruta',
+        description: error instanceof Error ? error.message : "Error al crear ruta",
+      });
     }
   };
 
@@ -238,8 +274,15 @@ export default function App() {
           bus.id === busId ? { ...bus, assignedStops: stopIds } : bus,
         ),
       );
+      sileo.success({
+        title: 'Paradas Asignadas',
+        description: 'Las paradas han sido asignadas al bus exitosamente',
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al asignar paradas");
+      sileo.error({
+        title: 'Error al Asignar Paradas',
+        description: error instanceof Error ? error.message : "Error al asignar paradas",
+      });
     }
   };
 
@@ -248,8 +291,52 @@ export default function App() {
     try {
       busService.deleteBus(busId);
       setBuses(buses.filter((bus) => bus.id !== busId));
+      sileo.success({
+        title: 'Bus Eliminado',
+        description: 'El bus ha sido eliminado exitosamente',
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al eliminar bus");
+      sileo.error({
+        title: 'Error al Eliminar Bus',
+        description: error instanceof Error ? error.message : "Error al eliminar bus",
+      });
+    }
+  };
+
+  // Edit bus
+  const handleEditBus = (busData: {
+    id: string;
+    number: string;
+    licensePlate: string;
+    capacity: number;
+    type: "express" | "local" | "shuttle";
+    driverId?: string;
+  }) => {
+    try {
+      const driver = busData.driverId
+        ? drivers.find((d) => d.id === busData.driverId)
+        : undefined;
+
+      const updatedBus = busService.updateBus(busData.id, {
+        number: busData.number,
+        licensePlate: busData.licensePlate,
+        capacity: busData.capacity,
+        type: busData.type,
+        driver,
+      });
+
+      if (updatedBus) {
+        setBuses(buses.map(bus => bus.id === busData.id ? updatedBus : bus));
+        sileo.success({
+          title: 'Bus Actualizado',
+          description: `El bus ${busData.number} ha sido actualizado exitosamente`,
+        });
+      }
+    } catch (error) {
+      sileo.error({
+        title: 'Error al Actualizar Bus',
+        description: error instanceof Error ? error.message : "Error al actualizar bus",
+      });
     }
   };
 
@@ -270,6 +357,13 @@ export default function App() {
 
     setBuses(updatedBuses);
     setShowBusBoarding(false);
+    setInitialBusForBoarding(null);
+  };
+
+  // Track bus - open boarding with specific bus
+  const handleTrackBus = (bus: BusType) => {
+    setInitialBusForBoarding(bus);
+    setShowBusBoarding(true);
   };
 
   // Delete driver
@@ -295,8 +389,15 @@ export default function App() {
           assignedStops: bus.assignedStops?.filter((id) => id !== stopId) || [],
         })),
       );
+      sileo.success({
+        title: 'Parada Eliminada',
+        description: 'La parada ha sido eliminada exitosamente',
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al eliminar parada");
+      sileo.error({
+        title: 'Error al Eliminar Parada',
+        description: error instanceof Error ? error.message : "Error al eliminar parada",
+      });
     }
   };
 
@@ -305,8 +406,15 @@ export default function App() {
     try {
       routeService.deleteRoute(routeId);
       setRoutes(routes.filter((route) => route.id !== routeId));
+      sileo.success({
+        title: 'Ruta Eliminada',
+        description: 'La ruta ha sido eliminada exitosamente',
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al eliminar ruta");
+      sileo.error({
+        title: 'Error al Eliminar Ruta',
+        description: error instanceof Error ? error.message : "Error al eliminar ruta",
+      });
     }
   };
 
@@ -627,6 +735,7 @@ export default function App() {
                   <BusDetails
                     bus={selectedBus}
                     onClose={() => setSelectedBus(null)}
+                    onTrackBus={handleTrackBus}
                   />
                 )}
               </div>
@@ -659,6 +768,7 @@ export default function App() {
           onDeleteDriver={handleDeleteDriver}
           onDeleteStop={handleDeleteStop}
           onDeleteRoute={handleDeleteRoute}
+          onEditBus={handleEditBus}
           onClose={() => setShowAdmin(false)}
         />
       )}
@@ -768,7 +878,10 @@ export default function App() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold">Subirse a un Bus</h2>
                 <button
-                  onClick={() => setShowBusBoarding(false)}
+                  onClick={() => {
+                    setShowBusBoarding(false);
+                    setInitialBusForBoarding(null);
+                  }}
                   className="text-slate-400 hover:text-slate-600"
                 >
                   <X className="w-6 h-6" />
@@ -778,6 +891,7 @@ export default function App() {
                 buses={buses}
                 currentUser={currentUser}
                 onBoarding={handlePassengerBoarding}
+                initialBus={initialBusForBoarding}
               />
             </Card>
           </div>
