@@ -5,9 +5,10 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { RegisterData } from '../types/user';
+import { UserRole } from '../types/user';
 
 interface RegisterFormProps {
-  onRegister: (data: RegisterData) => void;
+  onRegister: (data: RegisterData, role: UserRole) => void;
   onSwitchToLogin: () => void;
   error?: string;
 }
@@ -22,6 +23,8 @@ export function RegisterForm({ onRegister, onSwitchToLogin, error }: RegisterFor
 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('passenger');
+  const [licenseNumber, setLicenseNumber] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +40,12 @@ export function RegisterForm({ onRegister, onSwitchToLogin, error }: RegisterFor
       return;
     }
 
-    onRegister(formData);
+    if (selectedRole === 'driver' && !licenseNumber) {
+      setValidationError('El número de licencia es requerido para conductores');
+      return;
+    }
+
+    onRegister(formData, selectedRole);
   };
 
   return (
@@ -48,7 +56,7 @@ export function RegisterForm({ onRegister, onSwitchToLogin, error }: RegisterFor
             <Bus className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-semibold">BusTracker Pro</h1>
-          <p className="text-slate-600 text-sm mt-1">Registro de Pasajero</p>
+          <p className="text-slate-600 text-sm mt-1">Crear Nueva Cuenta</p>
         </div>
 
         {(error || validationError) && (
@@ -58,6 +66,21 @@ export function RegisterForm({ onRegister, onSwitchToLogin, error }: RegisterFor
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="role">
+              Tipo de Cuenta <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="role"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="passenger">Pasajero</option>
+              <option value="driver">Conductor</option>
+            </select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">
               Nombre Completo <span className="text-red-500">*</span>
@@ -71,6 +94,22 @@ export function RegisterForm({ onRegister, onSwitchToLogin, error }: RegisterFor
               required
             />
           </div>
+
+          {selectedRole === 'driver' && (
+            <div className="space-y-2">
+              <Label htmlFor="licenseNumber">
+                Número de Licencia <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="licenseNumber"
+                type="text"
+                placeholder="LIC-1234567"
+                value={licenseNumber}
+                onChange={(e) => setLicenseNumber(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="email">

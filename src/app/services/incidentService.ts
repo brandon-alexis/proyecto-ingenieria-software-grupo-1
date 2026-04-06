@@ -1,37 +1,26 @@
-export type IncidentType = 'mechanical' | 'traffic' | 'passenger' | 'driver' | 'other';
+export type IncidentType = 'accident' | 'mechanical' | 'traffic' | 'passenger' | 'other';
 
 export interface Incident {
   id: string;
-  type: IncidentType;
+  title: string;
   description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'reported' | 'investigating' | 'resolved';
+  category: IncidentType;
+  severity: 'low' | 'medium' | 'high';
+  status: 'open' | 'investigating' | 'resolved';
   reportedBy: string; // user ID
   busId?: string;
-  driverId?: string;
-  stopId?: string;
-  routeId?: string;
-  location?: {
-    lat: number;
-    lng: number;
-  };
+  location?: string;
   timestamp: string;
   resolvedAt?: string;
-  resolution?: string;
 }
 
 export interface IncidentReport {
-  type: IncidentType;
+  title: string;
   description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  category: IncidentType;
+  severity: 'low' | 'medium' | 'high';
   busId?: string;
-  driverId?: string;
-  stopId?: string;
-  routeId?: string;
-  location?: {
-    lat: number;
-    lng: number;
-  };
+  location?: string;
 }
 
 // Simulated incident service
@@ -55,7 +44,7 @@ export const incidentService = {
     const newIncident: Incident = {
       id: `incident_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       ...report,
-      status: 'reported',
+      status: 'open',
       reportedBy,
       timestamp: new Date().toISOString(),
     };
@@ -64,6 +53,38 @@ export const incidentService = {
     localStorage.setItem('bus_tracker_incidents', JSON.stringify(incidents));
 
     return newIncident;
+  },
+
+  // Create new incident
+  createIncident: (incident: Omit<Incident, 'id'>): Incident => {
+    const incidents = incidentService.getAllIncidents();
+
+    const newIncident: Incident = {
+      ...incident,
+      id: `incident_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    };
+
+    incidents.push(newIncident);
+    localStorage.setItem('bus_tracker_incidents', JSON.stringify(incidents));
+
+    return newIncident;
+  },
+
+  // Delete incident
+  deleteIncident: (id: string): boolean => {
+    const incidents = incidentService.getAllIncidents();
+    const filteredIncidents = incidents.filter(i => i.id !== id);
+    
+    if (filteredIncidents.length === incidents.length) return false;
+    
+    localStorage.setItem('bus_tracker_incidents', JSON.stringify(filteredIncidents));
+    return true;
+  },
+
+  // Get incidents by reporter
+  getIncidentsByReporter: (reporterId: string): Incident[] => {
+    const incidents = incidentService.getAllIncidents();
+    return incidents.filter(incident => incident.reportedBy === reporterId);
   },
 
   // Update incident status
@@ -76,7 +97,6 @@ export const incidentService = {
     incident.status = status;
     if (status === 'resolved') {
       incident.resolvedAt = new Date().toISOString();
-      incident.resolution = resolution;
     }
 
     localStorage.setItem('bus_tracker_incidents', JSON.stringify(incidents));
@@ -89,22 +109,16 @@ export const incidentService = {
     return incidents.filter(incident => incident.status === status);
   },
 
-  // Get incidents by type
-  getIncidentsByType: (type: IncidentType): Incident[] => {
+  // Get incidents by category
+  getIncidentsByCategory: (category: IncidentType): Incident[] => {
     const incidents = incidentService.getAllIncidents();
-    return incidents.filter(incident => incident.type === type);
+    return incidents.filter(incident => incident.category === category);
   },
 
   // Get incidents by bus
   getIncidentsByBus: (busId: string): Incident[] => {
     const incidents = incidentService.getAllIncidents();
     return incidents.filter(incident => incident.busId === busId);
-  },
-
-  // Get incidents by driver
-  getIncidentsByDriver: (driverId: string): Incident[] => {
-    const incidents = incidentService.getAllIncidents();
-    return incidents.filter(incident => incident.driverId === driverId);
   },
 
   // Get active incidents (not resolved)
@@ -116,22 +130,22 @@ export const incidentService = {
   // Get incident statistics
   getIncidentStats: (): {
     total: number;
-    byType: Record<IncidentType, number>;
+    byCategory: Record<IncidentType, number>;
     byStatus: Record<Incident['status'], number>;
     bySeverity: Record<Incident['severity'], number>;
   } => {
     const incidents = incidentService.getAllIncidents();
 
-    const byType: Record<IncidentType, number> = {
+    const byCategory: Record<IncidentType, number> = {
+      accident: 0,
       mechanical: 0,
       traffic: 0,
       passenger: 0,
-      driver: 0,
       other: 0,
     };
 
     const byStatus: Record<Incident['status'], number> = {
-      reported: 0,
+      open: 0,
       investigating: 0,
       resolved: 0,
     };
@@ -140,18 +154,17 @@ export const incidentService = {
       low: 0,
       medium: 0,
       high: 0,
-      critical: 0,
     };
 
     incidents.forEach(incident => {
-      byType[incident.type]++;
+      byCategory[incident.category]++;
       byStatus[incident.status]++;
       bySeverity[incident.severity]++;
     });
 
     return {
       total: incidents.length,
-      byType,
+      byCategory,
       byStatus,
       bySeverity,
     };
