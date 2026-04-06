@@ -15,17 +15,19 @@ Sistema de gestión de transporte público con geolocalización en tiempo real, 
 <br>
 
 <a href="#instalacion"><kbd>Instalación</kbd></a> •
-<a href="#RF"><kbd>Tecnologías</kbd></a> •
-<a href="#RNF"><kbd>RF</kbd></a> •
+<a href="#RF"><kbd>RF</kbd></a> •
+<a href="#RNF"><kbd>RNF</kbd></a> •
 <a href="#HU"><kbd>HU</kbd></a> •
 
 </div>
 
 
 ---
+<a id="instalacion"></a>
+<br>
 
 ## Instalación
-<a id="instalacion"></a>
+
 
 > [!IMPORTANT]
 > Necesitas tener instalado el gestor de paquetes `pnpm` para instalar los paquetes
@@ -37,9 +39,10 @@ cd Bus-WEb-Application-Design
 pnpm install
 pnpm dev
 ```
-
-## Requerimientos funcionales
 <a id="RF"></a>
+<br>
+## Requerimientos funcionales
+
 
 <table>
   <thead>
@@ -129,8 +132,9 @@ pnpm dev
   </tbody>
 </table>
 
-# Requerimientos no funcionales
 <a id="RNF"></a>
+<br>
+# Requerimientos no funcionales
 
 <table>
   <thead>
@@ -184,24 +188,27 @@ pnpm dev
   </tbody>
 </table>
 
+<a id="HU"></a>
+<br>
 # Historias de Usuario
 
-- [ ] HU-1: Como administrador quiero registrar la información de los buses (placa, código e identificación y capacidad) para almacenar los datos de los buses.
+
+- [x] HU-1: Como administrador quiero registrar la información de los buses (placa, código e identificación y capacidad) para almacenar los datos de los buses.
 - [ ] HU-2: Como pasajero quiero consultar la información de los buses para conocer sus datos básicos.
-- [ ] HU-3: Como administrador quiero registrar paradas con nombre y ubicación para definir el recorrido.
-- [ ] HU-4: Como pasajero quiero registrarme para acceder a la aplicación.
-- [ ] HU-5: Como pasajero quiero ver la ubicación del bus en tiempo real.
-- [ ] HU-6: Como pasajero quiero ver la ruta del bus en el mapa.
+- [x] HU-3: Como administrador quiero registrar paradas con nombre y ubicación para definir el recorrido.
+- [x] HU-4: Como pasajero quiero registrarme para acceder a la aplicación.
+- [x] HU-5: Como pasajero quiero ver la ubicación del bus en tiempo real.
+- [x] HU-6: Como pasajero quiero ver la ruta del bus en el mapa.
 - [ ] HU-7: Como pasajero quiero ver la capacidad del bus.
-- [ ] HU-8: Como pasajero quiero ver disponibilidad de asientos.
-- [ ] HU-9: Como administrador quiero calcular tiempos de llegada.
-- [ ] HU-10: Como pasajero quiero ver el tiempo estimado.
-- [ ] HU-11: Como pasajero quiero ver el costo del recorrido.
-- [ ] HU-12: Como pasajero quiero ver alertas de retraso.
-- [ ] HU-13: Como administrador quiero gestionar roles.
+- [x] HU-8: Como pasajero quiero ver disponibilidad de asientos.
+- [x] HU-9: Como administrador quiero calcular tiempos de llegada.
+- [x] HU-10: Como pasajero quiero ver el tiempo estimado.
+- [x] HU-11: Como pasajero quiero ver el costo del recorrido.
+- [x] HU-12: Como pasajero quiero ver alertas de retraso.
+- [x] HU-13: Como administrador quiero gestionar roles.
 - [ ] HU-14: Como pasajero quiero recibir recomendaciones de rutas.
 - [ ] HU-15: Como conductor quiero reportar fallas.
-- [ ] HU-16: Como pasajero quiero pagar con distintos métodos.
+- [x] HU-16: Como pasajero quiero pagar con distintos métodos.
 - [ ] HU-17: Como pasajero quiero calificar el servicio del conductor.
 - [ ] HU-18: Como administrador quiero actualizar la información de los buses para mantener los datos correctos.
 - [ ] HU-19: Como administrador quiero editar paradas para corregir errores.
