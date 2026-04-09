@@ -20,7 +20,7 @@ Sistema de gestión de transporte público que integra geolocalización en tiemp
 <a href="docs/historias-de-usuario.md"><kbd>HU</kbd></a> •
 <a href="docs/casos-de-uso.md"><kbd>CU</kbd></a> •
 <a href="docs/documento%20tecnico.pdf" target="_blank"><kbd>Documento tecnico</kbd></a> •
-
+<
 
 
 
@@ -44,6 +44,10 @@ cd Bus-WEb-Application-Design
 pnpm install
 pnpm dev
 ```
+
+## Diagrama de Clases
+<img width="976" height="864" alt="diagrama de clase ing drawio" src="https://github.com/user-attachments/assets/87d62061-32d1-4d92-b44e-de1703671544" />
+
 
 
 ## Integrantes
