@@ -20,7 +20,7 @@ Sistema de gestión de transporte público que integra geolocalización en tiemp
 <a href="docs/historias-de-usuario.md"><kbd>HU</kbd></a> •
 <a href="docs/casos-de-uso.md"><kbd>CU</kbd></a> •
 <a href="docs/documento%20tecnico.pdf" target="_blank"><kbd>Documento tecnico</kbd></a> •
-<
+
 
 
 
