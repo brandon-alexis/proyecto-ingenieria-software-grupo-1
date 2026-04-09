@@ -18,6 +18,8 @@ Sistema de gestión de transporte público que integra geolocalización en tiemp
 <a href="docs/requerimientos-funcionales.md"><kbd>RF</kbd></a> •
 <a href="docs/requerimientos-no-funcionales.md"><kbd>RNF</kbd></a> •
 <a href="docs/historias-de-usuario.md"><kbd>HU</kbd></a> •
+<a href="docs/casos-de-uso.md"><kbd>CU</kbd></a> •
+
 
 </div>
 
