@@ -43,6 +43,12 @@ pnpm dev
 
 <a id="HU"></a>
 <br>
+
+## Integrantes
+- Brandon Alexis Machado Ambuila
+- Integrante 2(modifiquen esto desde su rama)
+- Integrante 3(modifiquen esto desde su rama)
+
 # Historias de Usuario
 
 
