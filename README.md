@@ -47,7 +47,7 @@ pnpm dev
 
 ## Integrantes
 - Brandon Alexis Machado Ambuila
-- Integrante 2(modifiquen esto desde su rama)
+- Osman Alexis Olaya Murillo 
 - Integrante 3(modifiquen esto desde su rama)
 
 ## Diagrama de Clases
