@@ -1,8 +1,5 @@
 # Requerimientos no funcionales
 
-<a id="RNF"></a>
-<br>
-
 <table>
   <thead>
     <tr>

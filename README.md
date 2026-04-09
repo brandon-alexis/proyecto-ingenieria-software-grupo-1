@@ -1,9 +1,8 @@
 <div align="center">
 
-# Bus Web Application
-## **Bus Traker**
+# **Bus Traker**
 
-Sistema de gestión de transporte público con geolocalización en tiempo real, rutas, pagos y gestión de usuarios.
+Sistema de gestión de transporte público que integra geolocalización en tiempo real, administración de rutas, procesamiento de pagos y gestión de usuarios para optimizar la operación y mejorar la experiencia del usuario.
 
 <br>
 
@@ -16,9 +15,9 @@ Sistema de gestión de transporte público con geolocalización en tiempo real, 
 <br>
 
 <a href="#instalacion"><kbd>Instalación</kbd></a> •
-<a href="#RF"><kbd>RF</kbd></a> •
-<a href="#RNF"><kbd>RNF</kbd></a> •
-<a href="#HU"><kbd>HU</kbd></a> •
+<a href="docs/requerimientos-funcionales.md"><kbd>RF</kbd></a> •
+<a href="docs/requerimientos-no-funcionales.md"><kbd>RNF</kbd></a> •
+<a href="docs/historias-de-usuario.md"><kbd>HU</kbd></a> •
 
 </div>
 
@@ -41,8 +40,6 @@ pnpm install
 pnpm dev
 ```
 
-<a id="HU"></a>
-<br>
 
 ## Integrantes
 - Brandon Alexis Machado Ambuila

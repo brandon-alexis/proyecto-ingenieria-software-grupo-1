@@ -1,6 +1,5 @@
 # Historias de Usuario
 
-
 - [x] HU-1: Como administrador quiero registrar la información de los buses (placa, código e identificación y capacidad) para almacenar los datos de los buses.
 - [ ] HU-2: Como pasajero quiero consultar la información de los buses para conocer sus datos básicos.
 - [x] HU-3: Como administrador quiero registrar paradas con nombre y ubicación para definir el recorrido.

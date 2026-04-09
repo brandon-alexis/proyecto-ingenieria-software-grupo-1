@@ -1,8 +1,5 @@
  # Requerimientos Funcionales
 
-<a id="RF"></a>
-<br>
-
 <table>
   <thead>
     <tr>
