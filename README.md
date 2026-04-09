@@ -27,6 +27,11 @@ Sistema de gestión de transporte público que integra geolocalización en tiemp
 </div>
 
 
+## Integrantes
+- Brandon Alexis Machado Ambuila
+- Integrante 2(modifiquen esto desde su rama)
+- Integrante 3(modifiquen esto desde su rama)
+
 ---
 <a id="instalacion"></a>
 <br>
@@ -46,9 +51,6 @@ pnpm dev
 ```
 
 
-## Integrantes
-- Brandon Alexis Machado Ambuila
-- Integrante 2(modifiquen esto desde su rama)
-- Integrante 3(modifiquen esto desde su rama)
+
 
 
