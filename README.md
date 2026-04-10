@@ -29,8 +29,8 @@ Sistema de gestión de transporte público que integra geolocalización en tiemp
 
 ## Integrantes
 - Brandon Alexis Machado Ambuila
-- Integrante 2(modifiquen esto desde su rama)
-- Integrante 3(modifiquen esto desde su rama)
+- Osman Alexis Olaya Murillo 
+- Eimer David Marin Guevara
 
 ---
 <a id="instalacion"></a>
@@ -49,16 +49,6 @@ cd Bus-WEb-Application-Design
 pnpm install
 pnpm dev
 ```
-
-<<<<<<< HEAD
-
-
-=======
-## Integrantes
-- Brandon Alexis Machado Ambuila
-- Osman Alexis Olaya Murillo 
-- Integrante 3(modifiquen esto desde su rama)
->>>>>>> Brandon
 
 ## Diagrama de Clases
 <img width="976" height="864" alt="diagrama de clase ing drawio" src="https://github.com/user-attachments/assets/87d62061-32d1-4d92-b44e-de1703671544" />
