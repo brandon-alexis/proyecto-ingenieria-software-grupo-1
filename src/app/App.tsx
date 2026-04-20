@@ -25,7 +25,7 @@ import { RatingForm } from "./components/RatingForm";
 import { LoginForm } from "./components/LoginForm";
 import { RegisterForm } from "./components/RegisterForm";
 import { BusBoarding } from "./components/BusBoarding";
-import { DriverIncidentPanel } from "./components/DriverIncidentPanel";
+import { RouteComparison } from "./components/RouteComparison";
 import {
   buses as mockBuses,
   busStops as mockStops,
@@ -48,7 +48,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [authError, setAuthError] = useState<string>("");
-  const [selectedRoute, setSelectedRoute] = useState<RouteType | null>(null);
+  const [selectedRoutes, setSelectedRoutes] = useState<RouteType[]>([]);
   const [selectedStop, setSelectedStop] = useState<BusStop | null>(null);
   const [selectedBus, setSelectedBus] = useState<BusType | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,6 +60,7 @@ export default function App() {
   const [showBusBoarding, setShowBusBoarding] = useState(false);
   const [initialBusForBoarding, setInitialBusForBoarding] = useState<BusType | null>(null);
   const [showDriverPanel, setShowDriverPanel] = useState(false);
+  const [showRouteComparison, setShowRouteComparison] = useState(false);
 
   // State for managing buses, drivers, and stops
   const [buses, setBuses] = useState<BusType[]>([]);
@@ -629,8 +630,9 @@ export default function App() {
               <TabsContent value="routes" className="p-4">
                 <RouteSelector
                   routes={filteredRoutes}
-                  selectedRoute={selectedRoute}
-                  onSelectRoute={setSelectedRoute}
+                  selectedRoutes={selectedRoutes}
+                  onSelectRoutes={setSelectedRoutes}
+                  onCompare={() => setShowRouteComparison(true)}
                 />
               </TabsContent>
 
@@ -697,12 +699,12 @@ export default function App() {
           <div className="absolute inset-0 p-4">
             <BusMapLeaflet
               buses={filteredBuses}
-              stops={selectedRoute ? selectedRoute.stops : filteredStops}
-              selectedRoute={selectedRoute}
+              stops={selectedRoutes.length > 0 ? selectedRoutes.flatMap(r => r.stops) : filteredStops}
+              selectedRoutes={selectedRoutes}
               selectedBus={selectedBus}
               onStopClick={handleStopClick}
               onBusClick={handleBusClick}
-              showAllRoutes={!selectedRoute && !selectedBus}
+              showAllRoutes={!selectedRoutes.length && !selectedBus}
               allStops={stops}
             />
           </div>
@@ -916,6 +918,14 @@ export default function App() {
             </Card>
           </div>
         </div>
+      )}
+
+      {/* Route Comparison Modal */}
+      {showRouteComparison && (
+        <RouteComparison
+          routes={selectedRoutes}
+          onClose={() => setShowRouteComparison(false)}
+        />
       )}
     </div>
   );
