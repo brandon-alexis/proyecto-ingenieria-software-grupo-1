@@ -49,4 +49,5 @@ export interface Route {
   color: string;
   frequency: string;
   operatingHours: string;
+  fare: number; // Cost in currency units
 }

@@ -26,7 +26,7 @@ L.Icon.Default.mergeOptions({
 interface BusMapLeafletProps {
   buses: BusType[];
   stops: BusStop[];
-  selectedRoute: Route | null;
+  selectedRoutes: Route[];
   selectedBus: BusType | null;
   onStopClick: (stop: BusStop) => void;
   onBusClick: (bus: BusType) => void;
@@ -109,7 +109,7 @@ const createStopIcon = (isHighlighted: boolean) => {
 export const BusMapLeaflet = React.memo(function BusMapLeaflet({
   buses,
   stops,
-  selectedRoute,
+  selectedRoutes,
   selectedBus,
   onStopClick,
   onBusClick,
@@ -177,22 +177,23 @@ export const BusMapLeaflet = React.memo(function BusMapLeaflet({
 
         <MapBounds stops={stops} buses={buses} />
 
-        {/* Route lines for selected route */}
-        {selectedRoute && selectedRoute.stops.length > 1 && (
+        {/* Route lines for selected routes */}
+        {selectedRoutes.map(route => route.stops.length > 1 && (
           <Polyline
-            positions={selectedRoute.stops.map(
+            key={route.id}
+            positions={route.stops.map(
               (s) => [s.location.lat, s.location.lng] as [number, number],
             )}
-            color={selectedRoute.color}
+            color={route.color}
             weight={4}
             opacity={0.7}
             dashArray="10, 5"
           />
-        )}
+        ))}
 
         {/* Route lines for selected bus */}
         {selectedBus &&
-          !selectedRoute &&
+          !selectedRoutes.length &&
           (() => {
             const busRoute = getBusRoute(selectedBus);
             if (busRoute.length > 1) {
@@ -213,7 +214,7 @@ export const BusMapLeaflet = React.memo(function BusMapLeaflet({
 
         {/* Show all bus routes if enabled */}
         {showAllRoutes &&
-          !selectedRoute &&
+          !selectedRoutes.length &&
           !selectedBus &&
           buses.map((bus, index) => {
             const busRoute = getBusRoute(bus);
@@ -244,8 +245,8 @@ export const BusMapLeaflet = React.memo(function BusMapLeaflet({
 
         {/* Bus stops */}
         {stops.map((stop) => {
-          const isOnSelectedRoute = selectedRoute?.stops.some(
-            (s) => s.id === stop.id,
+          const isOnSelectedRoute = selectedRoutes.some(route =>
+            route.stops.some(s => s.id === stop.id)
           );
 
           return (
@@ -289,7 +290,7 @@ export const BusMapLeaflet = React.memo(function BusMapLeaflet({
         {/* Buses */}
         {buses.map((bus) => {
           const shouldShow =
-            !selectedRoute || selectedRoute.number === bus.number;
+            !selectedRoutes.length || selectedRoutes.some(route => route.number === bus.number);
           if (!shouldShow) return null;
 
           return (
