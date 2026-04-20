@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Settings,
   Bus,
@@ -7,6 +7,7 @@ import {
   X,
   MapPin,
   Route,
+  Archive,
 } from "lucide-react";
 import { Bus as BusType, Driver, BusStop, Route as RouteType } from "../types/bus";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -20,6 +21,7 @@ import { AdminDriverList } from "./AdminDriverList";
 import { AdminStopList } from "./AdminStopList";
 import { AdminRouteList } from "./AdminRouteList";
 import { AdminBusStopAssignment } from "./AdminBusStopAssignment";
+import { ObsoleteRecordsManager } from "./ObsoleteRecordsManager";
 
 interface AdminPanelProps {
   buses: BusType[];
@@ -93,6 +95,58 @@ export function AdminPanel({
   const [showRouteForm, setShowRouteForm] = useState(false);
   const [editingBus, setEditingBus] = useState<BusType | null>(null);
 
+  // Persistent obsolete records state
+  interface ObsoleteRecord {
+    id: string;
+    name: string;
+    type: 'bus' | 'driver' | 'stop' | 'route';
+    createdDate: string;
+    reason: string;
+  }
+
+  const [obsoleteMarks, setObsoleteMarks] = useState<Map<string, ObsoleteRecord>>(new Map());
+
+  // Load obsolete marks from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('obsoleteRecords');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setObsoleteMarks(new Map(parsed));
+      }
+    } catch (error) {
+      console.error('Error loading obsolete records:', error);
+    }
+  }, []);
+
+  // Save obsolete marks to localStorage whenever they change
+  useEffect(() => {
+    try {
+      const toSave = Array.from(obsoleteMarks.entries());
+      localStorage.setItem('obsoleteRecords', JSON.stringify(toSave));
+    } catch (error) {
+      console.error('Error saving obsolete records:', error);
+    }
+  }, [obsoleteMarks]);
+
+  const markObsolete = (id: string, type: 'bus' | 'driver' | 'stop' | 'route', name: string, reason: string = '') => {
+    const newMarks = new Map(obsoleteMarks);
+    newMarks.set(id, {
+      id,
+      name,
+      type,
+      createdDate: new Date().toISOString().split('T')[0],
+      reason,
+    });
+    setObsoleteMarks(newMarks);
+  };
+
+  const unmarkObsolete = (id: string) => {
+    const newMarks = new Map(obsoleteMarks);
+    newMarks.delete(id);
+    setObsoleteMarks(newMarks);
+  };
+
   const handleBusSubmit = (busData: any) => {
     if (editingBus) {
       // Editing existing bus
@@ -155,7 +209,7 @@ export function AdminPanel({
         {/* Content */}
         <div className="flex-1 overflow-auto p-4">
           <Tabs defaultValue="buses" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
               <TabsTrigger value="buses" className="flex items-center gap-2">
                 <Bus className="w-4 h-4" />
                 Buses
@@ -175,6 +229,10 @@ export function AdminPanel({
               <TabsTrigger value="assignments" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
                 Asignaciones
+              </TabsTrigger>
+              <TabsTrigger value="obsolete" className="flex items-center gap-2">
+                <Archive className="w-4 h-4" />
+                Obsoletos
               </TabsTrigger>
             </TabsList>
 
@@ -283,6 +341,23 @@ export function AdminPanel({
                 buses={buses}
                 stops={stops}
                 onAssignStops={onAssignStops}
+              />
+            </TabsContent>
+
+            {/* Obsolete Records Tab */}
+            <TabsContent value="obsolete" className="space-y-6">
+              <ObsoleteRecordsManager
+                buses={buses}
+                drivers={drivers}
+                stops={stops}
+                routes={routes}
+                obsoleteMarks={obsoleteMarks}
+                onMarkObsolete={markObsolete}
+                onUnmarkObsolete={unmarkObsolete}
+                onDeleteBus={onDeleteBus || (() => {})}
+                onDeleteDriver={onDeleteDriver || (() => {})}
+                onDeleteStop={onDeleteStop || (() => {})}
+                onDeleteRoute={onDeleteRoute || (() => {})}
               />
             </TabsContent>
           </Tabs>
