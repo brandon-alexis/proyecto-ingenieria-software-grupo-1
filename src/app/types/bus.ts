@@ -50,4 +50,5 @@ export interface Route {
   frequency: string;
   operatingHours: string;
   fare: number; // Cost in currency units
+  frequencyMinutes: number; // Frequency in minutes for filtering
 }

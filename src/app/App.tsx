@@ -61,6 +61,13 @@ export default function App() {
   const [initialBusForBoarding, setInitialBusForBoarding] = useState<BusType | null>(null);
   const [showDriverPanel, setShowDriverPanel] = useState(false);
   const [showRouteComparison, setShowRouteComparison] = useState(false);
+  const [routeFilters, setRouteFilters] = useState({
+    minFare: 0,
+    maxFare: 10,
+    minStops: 0,
+    maxStops: 20,
+    maxFrequencyMinutes: 30,
+  });
 
   // State for managing buses, drivers, and stops
   const [buses, setBuses] = useState<BusType[]>([]);
@@ -432,17 +439,37 @@ export default function App() {
     );
   }, [searchQuery, buses]);
 
-  // Filter routes based on search query
+  // Filter routes based on search query and filters
   const filteredRoutes = useMemo(() => {
-    if (!searchQuery) return routes;
+    let filtered = routes;
 
-    const query = searchQuery.toLowerCase();
-    return routes.filter(
-      (route) =>
-        route.number.toLowerCase().includes(query) ||
-        route.name.toLowerCase().includes(query),
+    // Text search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (route) =>
+          route.number.toLowerCase().includes(query) ||
+          route.name.toLowerCase().includes(query),
+      );
+    }
+
+    // Fare filter
+    filtered = filtered.filter(
+      (route) => route.fare >= routeFilters.minFare && route.fare <= routeFilters.maxFare
     );
-  }, [searchQuery, routes]);
+
+    // Stops filter
+    filtered = filtered.filter(
+      (route) => route.stops.length >= routeFilters.minStops && route.stops.length <= routeFilters.maxStops
+    );
+
+    // Frequency filter
+    filtered = filtered.filter(
+      (route) => route.frequencyMinutes <= routeFilters.maxFrequencyMinutes
+    );
+
+    return filtered;
+  }, [searchQuery, routes, routeFilters]);
 
   // Filter stops based on search query
   const filteredStops = useMemo(() => {
@@ -633,6 +660,8 @@ export default function App() {
                   selectedRoutes={selectedRoutes}
                   onSelectRoutes={setSelectedRoutes}
                   onCompare={() => setShowRouteComparison(true)}
+                  filters={routeFilters}
+                  onFiltersChange={setRouteFilters}
                 />
               </TabsContent>
 

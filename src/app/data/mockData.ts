@@ -270,6 +270,7 @@ export const routes: Route[] = [
     frequency: "Every 15 minutes",
     operatingHours: "5:00 AM - 11:00 PM",
     fare: 5.50,
+    frequencyMinutes: 15,
   },
   {
     id: "route-2",
@@ -287,6 +288,7 @@ export const routes: Route[] = [
     frequency: "Every 10 minutes",
     operatingHours: "6:00 AM - 12:00 AM",
     fare: 2.75,
+    frequencyMinutes: 10,
   },
   {
     id: "route-4",
@@ -297,6 +299,7 @@ export const routes: Route[] = [
     frequency: "Every 12 minutes",
     operatingHours: "6:00 AM - 10:00 PM",
     fare: 4.25,
+    frequencyMinutes: 12,
   },
   {
     id: "route-5",
@@ -307,6 +310,7 @@ export const routes: Route[] = [
     frequency: "Every 8 minutes",
     operatingHours: "5:30 AM - 11:30 PM",
     fare: 3.00,
+    frequencyMinutes: 8,
   },
   {
     id: "route-6",
@@ -317,6 +321,7 @@ export const routes: Route[] = [
     frequency: "Every 18 minutes",
     operatingHours: "7:00 AM - 9:00 PM",
     fare: 6.00,
+    frequencyMinutes: 18,
   },
   {
     id: "route-7",
@@ -327,5 +332,6 @@ export const routes: Route[] = [
     frequency: "Every 25 minutes",
     operatingHours: "8:00 AM - 6:00 PM",
     fare: 2.00,
+    frequencyMinutes: 25,
   },
 ];
