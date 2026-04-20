@@ -220,11 +220,7 @@ export function ObsoleteRecordsManager({
             <Card className="p-4 bg-red-50 border-red-200">
               <div className="space-y-3">
                 <h3 className="font-semibold text-red-900">Acciones Masivas</h3>
-<<<<<<< HEAD
                 <div className="flex gap-2 flex-wrap">
-=======
-                <div className="flex gap-2">
->>>>>>> 7c5cc681022c9ddae397c48fcca46f529e41644d
                   <Button
                     onClick={() => setSelectedRecords(new Set(obsoleteMarks.keys()))}
                     variant="outline"
@@ -475,8 +471,4 @@ export function ObsoleteRecordsManager({
       )}
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 7c5cc681022c9ddae397c48fcca46f529e41644d
