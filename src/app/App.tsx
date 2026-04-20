@@ -11,6 +11,7 @@ import {
   Bell,
   AlertTriangle,
   Star,
+  Calculator,
 } from "lucide-react";
 import { BusMapLeaflet } from "./components/BusMapLeaflet";
 import { BusCard } from "./components/BusCard";
@@ -26,6 +27,7 @@ import { LoginForm } from "./components/LoginForm";
 import { RegisterForm } from "./components/RegisterForm";
 import { BusBoarding } from "./components/BusBoarding";
 import { RouteComparison } from "./components/RouteComparison";
+import { TransportExpensePlanner } from "./components/TransportExpensePlanner";
 import {
   buses as mockBuses,
   busStops as mockStops,
@@ -615,30 +617,35 @@ export default function App() {
         <aside
           className={`${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 w-80 bg-white border-r border-slate-200 transition-transform duration-300 flex flex-col`}
+          } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 w-full sm:w-96 lg:w-80 xl:w-96 bg-white border-r border-slate-200 transition-transform duration-300 flex flex-col`}
         >
           <div className="p-4 border-b border-slate-200">
             <SearchBar onSearch={setSearchQuery} />
           </div>
 
-          <div className="flex-1 overflow-auto">
-            <Tabs defaultValue="buses" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 p-1 m-4 mb-0">
-                <TabsTrigger value="buses" className="text-xs">
-                  <Bus className="w-4 h-4 mr-1" />
-                  Buses
-                </TabsTrigger>
-                <TabsTrigger value="routes" className="text-xs">
-                  <Navigation2 className="w-4 h-4 mr-1" />
-                  Routes
-                </TabsTrigger>
-                <TabsTrigger value="stops" className="text-xs">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  Stops
-                </TabsTrigger>
-              </TabsList>
+          <Tabs defaultValue="buses" className="w-full flex flex-col flex-1 h-full">
+            <TabsList className="w-full grid grid-cols-4 p-1 m-4 mb-0 gap-1 flex-shrink-0 bg-slate-100 rounded-lg">
+              <TabsTrigger value="buses" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+                <Bus className="w-4 h-4" />
+                <span className="hidden sm:inline ml-1">Buses</span>
+              </TabsTrigger>
+              <TabsTrigger value="routes" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+                <Navigation2 className="w-4 h-4" />
+                <span className="hidden sm:inline ml-1">Rutas</span>
+              </TabsTrigger>
+              <TabsTrigger value="stops" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+                <MapPin className="w-4 h-4" />
+                <span className="hidden sm:inline ml-1">Paradas</span>
+              </TabsTrigger>
+              <TabsTrigger value="planner" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+                <Calculator className="w-4 h-4" />
+                <span className="hidden sm:inline ml-1">Plan</span>
+              </TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="buses" className="p-4 space-y-3">
+            <div className="flex-1 overflow-auto w-full">
+
+              <TabsContent value="buses" className="p-3 sm:p-4 space-y-2 sm:space-y-3">
                 {filteredBuses.length > 0 ? (
                   filteredBuses.map((bus) => (
                     <BusCard
@@ -648,13 +655,13 @@ export default function App() {
                     />
                   ))
                 ) : (
-                  <div className="text-center py-8 text-slate-500">
+                  <div className="text-center py-8 text-slate-500 text-sm">
                     No buses found
                   </div>
                 )}
               </TabsContent>
 
-              <TabsContent value="routes" className="p-4">
+              <TabsContent value="routes" className="p-3 sm:p-4">
                 <RouteSelector
                   routes={filteredRoutes}
                   selectedRoutes={selectedRoutes}
@@ -665,22 +672,22 @@ export default function App() {
                 />
               </TabsContent>
 
-              <TabsContent value="stops" className="p-4 space-y-2">
+              <TabsContent value="stops" className="p-3 sm:p-4 space-y-2">
                 {filteredStops.length > 0 ? (
                   filteredStops.map((stop) => (
                     <button
                       key={stop.id}
                       onClick={() => handleStopClick(stop)}
-                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                      className={`w-full text-left p-2 sm:p-3 rounded-lg border transition-all text-sm ${
                         selectedStop?.id === stop.id
                           ? "border-blue-500 bg-blue-50"
                           : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                     >
-                      <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-slate-700 mt-0.5" />
-                        <div className="flex-1">
-                          <div className="font-semibold">{stop.name}</div>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold truncate">{stop.name}</div>
                           <div className="text-xs text-slate-500 mt-1">
                             {stop.amenities.length} amenities
                           </div>
@@ -689,34 +696,38 @@ export default function App() {
                     </button>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-slate-500">
+                  <div className="text-center py-8 text-slate-500 text-sm">
                     No stops found
                   </div>
                 )}
               </TabsContent>
+
+              <TabsContent value="planner" className="p-3 sm:p-4">
+                <TransportExpensePlanner routes={routes} />
+              </TabsContent>
+            </div>
             </Tabs>
-          </div>
 
           {/* Stats Footer */}
-          <div className="p-4 border-t border-slate-200 bg-slate-50">
-            <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="p-3 sm:p-4 border-t border-slate-200 bg-slate-50 flex-shrink-0">
+            <div className="grid grid-cols-3 gap-2 text-center text-xs sm:text-sm">
               <div>
-                <div className="text-xl font-semibold text-blue-600">
+                <div className="text-lg sm:text-xl font-semibold text-blue-600">
                   {buses.length}
                 </div>
-                <div className="text-xs text-slate-600">Active Buses</div>
+                <div className="text-xs text-slate-600">Buses</div>
               </div>
               <div>
-                <div className="text-xl font-semibold text-green-600">
+                <div className="text-lg sm:text-xl font-semibold text-green-600">
                   {mockRoutes.length}
                 </div>
-                <div className="text-xs text-slate-600">Routes</div>
+                <div className="text-xs text-slate-600">Rutas</div>
               </div>
               <div>
-                <div className="text-xl font-semibold text-purple-600">
+                <div className="text-lg sm:text-xl font-semibold text-purple-600">
                   {mockStops.length}
                 </div>
-                <div className="text-xs text-slate-600">Stops</div>
+                <div className="text-xs text-slate-600">Paradas</div>
               </div>
             </div>
           </div>
@@ -752,7 +763,7 @@ export default function App() {
 
               {/* Panel de detalles */}
               <div
-                className="absolute top-4 right-4 w-96 max-h-[calc(100%-2rem)] overflow-auto z-[10000]"
+                className="absolute top-4 right-4 w-full sm:w-96 max-w-sm sm:max-w-none max-h-[calc(100%-2rem)] overflow-auto z-[10000] mx-4 sm:mx-0"
                 onClick={(e) => e.stopPropagation()}
               >
                 {selectedStop && (
