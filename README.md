@@ -44,7 +44,7 @@ Sistema de gestión de transporte público que integra geolocalización en tiemp
 > necesarios del proyecto y ejecutarlo para probarlo.
 
 ```bash
-git clone https://github.com/brandon-alexis/Bus-WEb-Application-Design.git
+git clone https://github.com/brandon-alexis/proyecto-ingenieria-software-grupo-1.git
 cd Bus-WEb-Application-Design
 pnpm install
 pnpm dev
