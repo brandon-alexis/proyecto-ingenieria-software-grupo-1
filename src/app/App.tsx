@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Star,
   Calculator,
+  CreditCard,
 } from "lucide-react";
 import { BusMapLeaflet } from "./components/BusMapLeaflet";
 import { BusCard } from "./components/BusCard";
@@ -28,13 +29,20 @@ import { RegisterForm } from "./components/RegisterForm";
 import { BusBoarding } from "./components/BusBoarding";
 import { RouteComparison } from "./components/RouteComparison";
 import { TransportExpensePlanner } from "./components/TransportExpensePlanner";
+import { PaymentHistory } from "./components/PaymentHistory";
+import { PaymentReceipt } from "./components/PaymentReceipt";
 import {
   buses as mockBuses,
   busStops as mockStops,
   routes as mockRoutes,
   drivers as mockDrivers,
 } from "./data/mockData";
-import { Bus as BusType, BusStop, Route as RouteType, Driver } from "./types/bus";
+import {
+  Bus as BusType,
+  BusStop,
+  Route as RouteType,
+  Driver,
+} from "./types/bus";
 import { User, LoginData, RegisterData, UserRole } from "./types/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Button } from "./components/ui/button";
@@ -44,7 +52,8 @@ import { busService } from "./services/busService";
 import { stopService } from "./services/stopService";
 import { routeService } from "./services/routeService";
 import { notificationService } from "./services/notificationService";
-import { sileo } from 'sileo';
+import { PaymentResult } from "./services/paymentService";
+import { sileo } from "sileo";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -60,9 +69,16 @@ export default function App() {
   const [showIncidentForm, setShowIncidentForm] = useState(false);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [showBusBoarding, setShowBusBoarding] = useState(false);
-  const [initialBusForBoarding, setInitialBusForBoarding] = useState<BusType | null>(null);
+  const [initialBusForBoarding, setInitialBusForBoarding] =
+    useState<BusType | null>(null);
   const [showDriverPanel, setShowDriverPanel] = useState(false);
   const [showRouteComparison, setShowRouteComparison] = useState(false);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+  const [paymentReceipt, setPaymentReceipt] = useState<PaymentResult | null>(
+    null,
+  );
+  const [paymentReceiptBus, setPaymentReceiptBus] = useState<string>("");
+  const [paymentReceiptRoute, setPaymentReceiptRoute] = useState<string>("");
   const [routeFilters, setRouteFilters] = useState({
     minFare: 0,
     maxFare: 10,
@@ -127,19 +143,23 @@ export default function App() {
   };
 
   // Handle register
-  const handleRegister = (data: RegisterData, role: UserRole = 'passenger', licenseNumber?: string) => {
+  const handleRegister = (
+    data: RegisterData,
+    role: UserRole = "passenger",
+    licenseNumber?: string,
+  ) => {
     try {
       const user = authService.register(data, role);
       setCurrentUser(user);
       setAuthError("");
 
       // If registering as driver, also create a driver entry
-      if (role === 'driver' && licenseNumber) {
+      if (role === "driver" && licenseNumber) {
         const newDriver: Driver = {
           id: `driver-${user.id}`,
           name: user.name,
           licenseNumber: licenseNumber,
-          phone: user.phone || '',
+          phone: user.phone || "",
           email: user.email,
         };
 
@@ -192,13 +212,14 @@ export default function App() {
       const newBus = busService.createBus(newBusData);
       setBuses([...buses, newBus]);
       sileo.success({
-        title: 'Bus Creado',
+        title: "Bus Creado",
         description: `El bus ${busData.number} ha sido creado exitosamente`,
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Crear Bus',
-        description: error instanceof Error ? error.message : "Error al crear bus",
+        title: "Error al Crear Bus",
+        description:
+          error instanceof Error ? error.message : "Error al crear bus",
       });
     }
   };
@@ -240,13 +261,14 @@ export default function App() {
       const newStop = stopService.createStop(newStopData);
       setStops([...stops, newStop]);
       sileo.success({
-        title: 'Parada Creada',
+        title: "Parada Creada",
         description: `La parada ${stopData.name} ha sido creada exitosamente`,
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Crear Parada',
-        description: error instanceof Error ? error.message : "Error al crear parada",
+        title: "Error al Crear Parada",
+        description:
+          error instanceof Error ? error.message : "Error al crear parada",
       });
     }
   };
@@ -264,13 +286,14 @@ export default function App() {
       const newRoute = routeService.createRoute(routeData);
       setRoutes([...routes, newRoute]);
       sileo.success({
-        title: 'Ruta Creada',
+        title: "Ruta Creada",
         description: `La ruta ${routeData.name} ha sido creada exitosamente`,
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Crear Ruta',
-        description: error instanceof Error ? error.message : "Error al crear ruta",
+        title: "Error al Crear Ruta",
+        description:
+          error instanceof Error ? error.message : "Error al crear ruta",
       });
     }
   };
@@ -285,13 +308,14 @@ export default function App() {
         ),
       );
       sileo.success({
-        title: 'Paradas Asignadas',
-        description: 'Las paradas han sido asignadas al bus exitosamente',
+        title: "Paradas Asignadas",
+        description: "Las paradas han sido asignadas al bus exitosamente",
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Asignar Paradas',
-        description: error instanceof Error ? error.message : "Error al asignar paradas",
+        title: "Error al Asignar Paradas",
+        description:
+          error instanceof Error ? error.message : "Error al asignar paradas",
       });
     }
   };
@@ -302,13 +326,14 @@ export default function App() {
       busService.deleteBus(busId);
       setBuses(buses.filter((bus) => bus.id !== busId));
       sileo.success({
-        title: 'Bus Eliminado',
-        description: 'El bus ha sido eliminado exitosamente',
+        title: "Bus Eliminado",
+        description: "El bus ha sido eliminado exitosamente",
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Eliminar Bus',
-        description: error instanceof Error ? error.message : "Error al eliminar bus",
+        title: "Error al Eliminar Bus",
+        description:
+          error instanceof Error ? error.message : "Error al eliminar bus",
       });
     }
   };
@@ -336,16 +361,19 @@ export default function App() {
       });
 
       if (updatedBus) {
-        setBuses(buses.map(bus => bus.id === busData.id ? updatedBus : bus));
+        setBuses(
+          buses.map((bus) => (bus.id === busData.id ? updatedBus : bus)),
+        );
         sileo.success({
-          title: 'Bus Actualizado',
+          title: "Bus Actualizado",
           description: `El bus ${busData.number} ha sido actualizado exitosamente`,
         });
       }
     } catch (error) {
       sileo.error({
-        title: 'Error al Actualizar Bus',
-        description: error instanceof Error ? error.message : "Error al actualizar bus",
+        title: "Error al Actualizar Bus",
+        description:
+          error instanceof Error ? error.message : "Error al actualizar bus",
       });
     }
   };
@@ -355,7 +383,7 @@ export default function App() {
     if (!paymentSuccess) return;
 
     // Update bus occupancy
-    const updatedBuses = buses.map(bus => {
+    const updatedBuses = buses.map((bus) => {
       if (bus.id === busId && bus.currentOccupancy < bus.capacity) {
         return {
           ...bus,
@@ -368,6 +396,17 @@ export default function App() {
     setBuses(updatedBuses);
     setShowBusBoarding(false);
     setInitialBusForBoarding(null);
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = (
+    payment: PaymentResult,
+    busNumber: string,
+    route: string,
+  ) => {
+    setPaymentReceipt(payment);
+    setPaymentReceiptBus(busNumber);
+    setPaymentReceiptRoute(route);
   };
 
   // Track bus - open boarding with specific bus
@@ -400,13 +439,14 @@ export default function App() {
         })),
       );
       sileo.success({
-        title: 'Parada Eliminada',
-        description: 'La parada ha sido eliminada exitosamente',
+        title: "Parada Eliminada",
+        description: "La parada ha sido eliminada exitosamente",
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Eliminar Parada',
-        description: error instanceof Error ? error.message : "Error al eliminar parada",
+        title: "Error al Eliminar Parada",
+        description:
+          error instanceof Error ? error.message : "Error al eliminar parada",
       });
     }
   };
@@ -417,13 +457,14 @@ export default function App() {
       routeService.deleteRoute(routeId);
       setRoutes(routes.filter((route) => route.id !== routeId));
       sileo.success({
-        title: 'Ruta Eliminada',
-        description: 'La ruta ha sido eliminada exitosamente',
+        title: "Ruta Eliminada",
+        description: "La ruta ha sido eliminada exitosamente",
       });
     } catch (error) {
       sileo.error({
-        title: 'Error al Eliminar Ruta',
-        description: error instanceof Error ? error.message : "Error al eliminar ruta",
+        title: "Error al Eliminar Ruta",
+        description:
+          error instanceof Error ? error.message : "Error al eliminar ruta",
       });
     }
   };
@@ -457,17 +498,21 @@ export default function App() {
 
     // Fare filter
     filtered = filtered.filter(
-      (route) => route.fare >= routeFilters.minFare && route.fare <= routeFilters.maxFare
+      (route) =>
+        route.fare >= routeFilters.minFare &&
+        route.fare <= routeFilters.maxFare,
     );
 
     // Stops filter
     filtered = filtered.filter(
-      (route) => route.stops.length >= routeFilters.minStops && route.stops.length <= routeFilters.maxStops
+      (route) =>
+        route.stops.length >= routeFilters.minStops &&
+        route.stops.length <= routeFilters.maxStops,
     );
 
     // Frequency filter
     filtered = filtered.filter(
-      (route) => route.frequencyMinutes <= routeFilters.maxFrequencyMinutes
+      (route) => route.frequencyMinutes <= routeFilters.maxFrequencyMinutes,
     );
 
     return filtered;
@@ -561,7 +606,7 @@ export default function App() {
                 <Settings className="w-5 h-5 text-slate-700" />
               </button>
             )}
-            {currentUser?.role === 'passenger' && (
+            {currentUser?.role === "passenger" && (
               <button
                 onClick={() => setShowBusBoarding(true)}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
@@ -570,7 +615,16 @@ export default function App() {
                 <Bus className="w-5 h-5 text-slate-700" />
               </button>
             )}
-            {currentUser?.role === 'driver' && (
+            {currentUser?.role === "passenger" && (
+              <button
+                onClick={() => setShowPaymentHistory(true)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Historial de Pagos"
+              >
+                <CreditCard className="w-5 h-5 text-slate-700" />
+              </button>
+            )}
+            {currentUser?.role === "driver" && (
               <button
                 onClick={() => setShowDriverPanel(true)}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
@@ -623,29 +677,46 @@ export default function App() {
             <SearchBar onSearch={setSearchQuery} />
           </div>
 
-          <Tabs defaultValue="buses" className="w-full flex flex-col flex-1 h-full">
+          <Tabs
+            defaultValue="buses"
+            className="w-full flex flex-col flex-1 h-full"
+          >
             <TabsList className="w-full grid grid-cols-4 p-1 m-4 mb-0 gap-1 flex-shrink-0 bg-slate-100 rounded-lg">
-              <TabsTrigger value="buses" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+              <TabsTrigger
+                value="buses"
+                className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600"
+              >
                 <Bus className="w-4 h-4" />
                 <span className="hidden sm:inline ml-1">Buses</span>
               </TabsTrigger>
-              <TabsTrigger value="routes" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+              <TabsTrigger
+                value="routes"
+                className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600"
+              >
                 <Navigation2 className="w-4 h-4" />
                 <span className="hidden sm:inline ml-1">Rutas</span>
               </TabsTrigger>
-              <TabsTrigger value="stops" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+              <TabsTrigger
+                value="stops"
+                className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600"
+              >
                 <MapPin className="w-4 h-4" />
                 <span className="hidden sm:inline ml-1">Paradas</span>
               </TabsTrigger>
-              <TabsTrigger value="planner" className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600">
+              <TabsTrigger
+                value="planner"
+                className="text-xs sm:text-sm p-2 data-[state=active]:bg-white data-[state=active]:text-blue-600"
+              >
                 <Calculator className="w-4 h-4" />
                 <span className="hidden sm:inline ml-1">Plan</span>
               </TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-auto w-full">
-
-              <TabsContent value="buses" className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+              <TabsContent
+                value="buses"
+                className="p-3 sm:p-4 space-y-2 sm:space-y-3"
+              >
                 {filteredBuses.length > 0 ? (
                   filteredBuses.map((bus) => (
                     <BusCard
@@ -687,7 +758,9 @@ export default function App() {
                       <div className="flex items-start gap-2 sm:gap-3">
                         <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold truncate">{stop.name}</div>
+                          <div className="font-semibold truncate">
+                            {stop.name}
+                          </div>
                           <div className="text-xs text-slate-500 mt-1">
                             {stop.amenities.length} amenities
                           </div>
@@ -706,7 +779,7 @@ export default function App() {
                 <TransportExpensePlanner routes={routes} />
               </TabsContent>
             </div>
-            </Tabs>
+          </Tabs>
 
           {/* Stats Footer */}
           <div className="p-3 sm:p-4 border-t border-slate-200 bg-slate-50 flex-shrink-0">
@@ -739,7 +812,11 @@ export default function App() {
           <div className="absolute inset-0 p-4">
             <BusMapLeaflet
               buses={filteredBuses}
-              stops={selectedRoutes.length > 0 ? selectedRoutes.flatMap(r => r.stops) : filteredStops}
+              stops={
+                selectedRoutes.length > 0
+                  ? selectedRoutes.flatMap((r) => r.stops)
+                  : filteredStops
+              }
               selectedRoutes={selectedRoutes}
               selectedBus={selectedBus}
               onStopClick={handleStopClick}
@@ -933,6 +1010,7 @@ export default function App() {
                 buses={buses}
                 currentUser={currentUser}
                 onBoarding={handlePassengerBoarding}
+                onPaymentSuccess={handlePaymentSuccess}
                 initialBus={initialBusForBoarding}
               />
             </Card>
@@ -966,6 +1044,35 @@ export default function App() {
           routes={selectedRoutes}
           onClose={() => setShowRouteComparison(false)}
         />
+      )}
+
+      {/* Payment History Modal */}
+      {showPaymentHistory && currentUser && (
+        <PaymentHistory
+          userId={currentUser.id}
+          onClose={() => setShowPaymentHistory(false)}
+        />
+      )}
+
+      {/* Payment Receipt Modal */}
+      {paymentReceipt && currentUser && (
+        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-center justify-center p-4 overflow-auto">
+          <div className="w-full max-w-2xl my-4">
+            <PaymentReceipt
+              payment={paymentReceipt}
+              user={currentUser}
+              busNumber={paymentReceiptBus}
+              route={paymentReceiptRoute}
+              onClose={() => {
+                setPaymentReceipt(null);
+                setPaymentReceiptBus("");
+                setPaymentReceiptRoute("");
+                setShowBusBoarding(false);
+                setInitialBusForBoarding(null);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
