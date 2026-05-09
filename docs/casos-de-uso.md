@@ -64,5 +64,47 @@
       <td>Permitir al pasajero y administrador consultar la ubicación geográfica del bus en el mapa en tiempo real.</td>
       <td>Pasajero, Administrador</td>
     </tr>
+    <tr>
+      <td>CU-10</td>
+      <td>Buscar Rutas</td>
+      <td>Permitir al pasajero buscar rutas disponibles según origen y destino.</td>
+      <td>Pasajero</td>
+    </tr>
+    <tr>
+      <td>CU-11</td>
+      <td>Consultar Tiempo estimado</td>
+      <td>Permitir al pasajero visualizar el tiempo estimado de llegada del bus a una parada.</td>
+      <td>Pasajero</td>
+    </tr>
+    <tr>
+      <td>CU-12</td>
+      <td>Recibir alertas de retraso</td>
+      <td>Permitir al pasajero recibir notificaciones sobre retrasos o incidentes en la ruta.</td>
+      <td>Pasajero</td>
+    </tr>
+    <tr>
+      <td>CU-13</td>
+      <td>Gestionar roles</td>
+      <td>Permitir al administrador asignar roles y permisos a los usuarios del sistema.</td>
+      <td>Administrador</td>
+    </tr>
+    <tr>
+      <td>CU-14</td>
+      <td>Realizar pago electrónico</td>
+      <td>Permitir al pasajero realizar el pago electrónico del pasaje.</td>
+      <td>Pasajero</td>
+    </tr>
+    <tr>
+      <td>CU-15</td>
+      <td>Consultar historial de pagos</td>
+      <td>Permitir al pasajero visualizar el historial de pagos realizados.</td>
+      <td>Pasajero</td>
+    </tr>
+    <tr>
+      <td>CU-16</td>
+      <td>Calificar servicio</td>
+      <td>Permitir al pasajero calificar el servicio del bus y del conductor.</td>
+      <td>Pasajero</td>
+    </tr>
   </tbody>
 </table>
