@@ -1,4 +1,4 @@
-export type PaymentMethod = 'card' | 'cash' | 'wallet' | 'transfer';
+export type PaymentMethod = "card" | "cash" | "wallet" | "transfer";
 
 export interface PaymentData {
   amount: number;
@@ -7,6 +7,8 @@ export interface PaymentData {
   expiryDate?: string;
   cvv?: string;
   walletId?: string;
+  busNumber?: string;
+  route?: string;
 }
 
 export interface PaymentResult {
@@ -15,6 +17,9 @@ export interface PaymentResult {
   message: string;
   amount: number;
   timestamp: string;
+  method?: PaymentMethod;
+  busNumber?: string;
+  route?: string;
 }
 
 export interface TripFare {
@@ -28,9 +33,14 @@ export interface TripFare {
 // Simulated payment service
 export const paymentService = {
   // Calculate trip fare
-  calculateFare: (distanceKm: number, durationMin: number, busType: 'express' | 'local' | 'shuttle' = 'local'): TripFare => {
-    const baseFare = 2.50; // Base fare in USD
-    const perKmRate = busType === 'express' ? 0.8 : busType === 'local' ? 0.5 : 0.3;
+  calculateFare: (
+    distanceKm: number,
+    durationMin: number,
+    busType: "express" | "local" | "shuttle" = "local",
+  ): TripFare => {
+    const baseFare = 2.5; // Base fare in USD
+    const perKmRate =
+      busType === "express" ? 0.8 : busType === "local" ? 0.5 : 0.3;
     const perMinRate = 0.1;
 
     const distanceFare = distanceKm * perKmRate;
@@ -42,7 +52,7 @@ export const paymentService = {
       distanceFare,
       timeFare,
       total: Math.round(total * 100) / 100, // Round to 2 decimals
-      currency: 'USD',
+      currency: "USD",
     };
   },
 
@@ -58,17 +68,23 @@ export const paymentService = {
           resolve({
             success: true,
             transactionId: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            message: 'Payment processed successfully',
+            message: "Payment processed successfully",
             amount: paymentData.amount,
             timestamp: new Date().toISOString(),
+            method: paymentData.method,
+            busNumber: paymentData.busNumber,
+            route: paymentData.route,
           });
         } else {
           resolve({
             success: false,
-            transactionId: '',
-            message: 'Payment failed. Please try again.',
+            transactionId: "",
+            message: "Payment failed. Please try again.",
             amount: paymentData.amount,
             timestamp: new Date().toISOString(),
+            method: paymentData.method,
+            busNumber: paymentData.busNumber,
+            route: paymentData.route,
           });
         }
       }, 2000); // 2 second delay
@@ -76,27 +92,32 @@ export const paymentService = {
   },
 
   // Validate payment data
-  validatePaymentData: (paymentData: PaymentData): { valid: boolean; errors: string[] } => {
+  validatePaymentData: (
+    paymentData: PaymentData,
+  ): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
 
     if (paymentData.amount <= 0) {
-      errors.push('Amount must be greater than 0');
+      errors.push("Amount must be greater than 0");
     }
 
-    if (paymentData.method === 'card') {
+    if (paymentData.method === "card") {
       if (!paymentData.cardNumber || paymentData.cardNumber.length < 16) {
-        errors.push('Valid card number is required');
+        errors.push("Valid card number is required");
       }
-      if (!paymentData.expiryDate || !/^\d{2}\/\d{2}$/.test(paymentData.expiryDate)) {
-        errors.push('Valid expiry date (MM/YY) is required');
+      if (
+        !paymentData.expiryDate ||
+        !/^\d{2}\/\d{2}$/.test(paymentData.expiryDate)
+      ) {
+        errors.push("Valid expiry date (MM/YY) is required");
       }
       if (!paymentData.cvv || paymentData.cvv.length < 3) {
-        errors.push('Valid CVV is required');
+        errors.push("Valid CVV is required");
       }
     }
 
-    if (paymentData.method === 'wallet' && !paymentData.walletId) {
-      errors.push('Wallet ID is required');
+    if (paymentData.method === "wallet" && !paymentData.walletId) {
+      errors.push("Wallet ID is required");
     }
 
     return {
@@ -119,15 +140,19 @@ export const paymentService = {
   },
 
   // Refund payment
-  processRefund: (transactionId: string, amount: number): Promise<PaymentResult> => {
+  processRefund: (
+    transactionId: string,
+    amount: number,
+  ): Promise<PaymentResult> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
           transactionId: `refund_${transactionId}`,
-          message: 'Refund processed successfully',
+          message: "Refund processed successfully",
           amount,
           timestamp: new Date().toISOString(),
+          method: "card",
         });
       }, 1500);
     });
