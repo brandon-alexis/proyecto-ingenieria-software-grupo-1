@@ -30,6 +30,7 @@ import { BusBoarding } from "./components/BusBoarding";
 import { RouteComparison } from "./components/RouteComparison";
 import { TransportExpensePlanner } from "./components/TransportExpensePlanner";
 import { PaymentHistory } from "./components/PaymentHistory";
+import { PaymentReceipt } from "./components/PaymentReceipt";
 import {
   buses as mockBuses,
   busStops as mockStops,
@@ -51,6 +52,7 @@ import { busService } from "./services/busService";
 import { stopService } from "./services/stopService";
 import { routeService } from "./services/routeService";
 import { notificationService } from "./services/notificationService";
+import { PaymentResult } from "./services/paymentService";
 import { sileo } from "sileo";
 
 export default function App() {
@@ -72,6 +74,11 @@ export default function App() {
   const [showDriverPanel, setShowDriverPanel] = useState(false);
   const [showRouteComparison, setShowRouteComparison] = useState(false);
   const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+  const [paymentReceipt, setPaymentReceipt] = useState<PaymentResult | null>(
+    null,
+  );
+  const [paymentReceiptBus, setPaymentReceiptBus] = useState<string>("");
+  const [paymentReceiptRoute, setPaymentReceiptRoute] = useState<string>("");
   const [routeFilters, setRouteFilters] = useState({
     minFare: 0,
     maxFare: 10,
@@ -389,6 +396,17 @@ export default function App() {
     setBuses(updatedBuses);
     setShowBusBoarding(false);
     setInitialBusForBoarding(null);
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = (
+    payment: PaymentResult,
+    busNumber: string,
+    route: string,
+  ) => {
+    setPaymentReceipt(payment);
+    setPaymentReceiptBus(busNumber);
+    setPaymentReceiptRoute(route);
   };
 
   // Track bus - open boarding with specific bus
@@ -992,6 +1010,7 @@ export default function App() {
                 buses={buses}
                 currentUser={currentUser}
                 onBoarding={handlePassengerBoarding}
+                onPaymentSuccess={handlePaymentSuccess}
                 initialBus={initialBusForBoarding}
               />
             </Card>
@@ -1033,6 +1052,27 @@ export default function App() {
           userId={currentUser.id}
           onClose={() => setShowPaymentHistory(false)}
         />
+      )}
+
+      {/* Payment Receipt Modal */}
+      {paymentReceipt && currentUser && (
+        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-center justify-center p-4 overflow-auto">
+          <div className="w-full max-w-2xl my-4">
+            <PaymentReceipt
+              payment={paymentReceipt}
+              user={currentUser}
+              busNumber={paymentReceiptBus}
+              route={paymentReceiptRoute}
+              onClose={() => {
+                setPaymentReceipt(null);
+                setPaymentReceiptBus("");
+                setPaymentReceiptRoute("");
+                setShowBusBoarding(false);
+                setInitialBusForBoarding(null);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

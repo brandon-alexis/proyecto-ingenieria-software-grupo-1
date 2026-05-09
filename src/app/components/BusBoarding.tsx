@@ -6,13 +6,19 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { AlertCircle, CreditCard, DollarSign } from "lucide-react";
-import { paymentService } from "../services/paymentService";
+import { paymentService, PaymentResult } from "../services/paymentService";
+import { PaymentReceipt } from "./PaymentReceipt";
 import { sileo } from "sileo";
 
 interface BusBoardingProps {
   buses: BusType[];
   currentUser: User | null;
   onBoarding: (busId: string, paymentSuccess: boolean) => void;
+  onPaymentSuccess?: (
+    payment: PaymentResult,
+    busNumber: string,
+    route: string,
+  ) => void;
   initialBus?: BusType;
 }
 
@@ -20,6 +26,7 @@ export function BusBoarding({
   buses,
   currentUser,
   onBoarding,
+  onPaymentSuccess,
   initialBus,
 }: BusBoardingProps) {
   const [selectedBus, setSelectedBus] = useState<BusType | null>(null);
@@ -35,6 +42,9 @@ export function BusBoarding({
   const [processing, setProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState("");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(
+    null,
+  );
 
   const availableBuses = buses.filter(
     (bus) => bus.currentOccupancy < bus.capacity,
@@ -117,10 +127,17 @@ export function BusBoarding({
 
       if (result.success) {
         setPaymentSuccess(true);
+        setPaymentResult(result);
         // Save to history
         paymentService.savePaymentToHistory(currentUser.id, result);
         // Trigger boarding in parent component
         onBoarding(selectedBus.id, true);
+
+        // Call parent callback if provided
+        if (onPaymentSuccess) {
+          onPaymentSuccess(result, selectedBus.number, selectedBus.nextStop);
+        }
+
         sileo.success({
           title: "Pago Exitoso",
           description: `Has pagado $${fare.total.toFixed(2)} por el viaje en el bus ${selectedBus.number}`,
@@ -143,7 +160,7 @@ export function BusBoarding({
     }
   };
 
-  if (paymentSuccess && selectedBus) {
+  if (paymentSuccess && selectedBus && paymentResult && currentUser) {
     return (
       <div className="space-y-4">
         <Card className="p-6 bg-green-50 border-green-200">
@@ -152,26 +169,13 @@ export function BusBoarding({
               <AlertCircle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-semibold text-green-900">
-                ¡Bienvenido a bordo!
-              </h3>
+              <h3 className="font-semibold text-green-900">¡Pago Procesado!</h3>
               <p className="text-sm text-green-700 mt-1">
-                Te has subido exitosamente al bus {selectedBus.number}
+                Tu comprobante se está preparando...
               </p>
               <p className="text-sm text-green-700">
                 Próxima parada: {selectedBus.nextStop}
               </p>
-              <Button
-                onClick={() => {
-                  setSelectedBus(null);
-                  setShowPayment(false);
-                  setPaymentSuccess(false);
-                  setCardData({ cardNumber: "", expiryDate: "", cvv: "" });
-                }}
-                className="mt-3 w-full"
-              >
-                Continuar
-              </Button>
             </div>
           </div>
         </Card>
