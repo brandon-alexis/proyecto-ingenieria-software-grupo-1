@@ -51,7 +51,7 @@ pnpm dev
 ```
 
 ## Diagrama de Clases
-<img width="1412" height="1044" alt="diagrama de clase ing drawio" src="https://github.com/user-attachments/assets/818ce370-9c6a-4ddb-90a3-76029c4a5e93" />
+<img width="1459" height="1181" alt="diagrama de clase ing drawio" src="https://github.com/user-attachments/assets/2dd81f53-354e-481a-ab76-eed2fa9e108e" />
 
 
 
