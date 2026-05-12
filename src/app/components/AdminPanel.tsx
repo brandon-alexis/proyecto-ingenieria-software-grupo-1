@@ -9,7 +9,12 @@ import {
   Route,
   Archive,
 } from "lucide-react";
-import { Bus as BusType, Driver, BusStop, Route as RouteType } from "../types/bus";
+import {
+  Bus as BusType,
+  Driver,
+  BusStop,
+  Route as RouteType,
+} from "../types/bus";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { AdminBusForm } from "./AdminBusForm";
@@ -70,6 +75,7 @@ interface AdminPanelProps {
     driverId?: string;
   }) => void;
   onClose?: () => void;
+  isFullScreen?: boolean;
 }
 
 export function AdminPanel({
@@ -88,6 +94,7 @@ export function AdminPanel({
   onDeleteRoute,
   onEditBus,
   onClose,
+  isFullScreen = false,
 }: AdminPanelProps) {
   const [showBusForm, setShowBusForm] = useState(false);
   const [showDriverForm, setShowDriverForm] = useState(false);
@@ -99,23 +106,25 @@ export function AdminPanel({
   interface ObsoleteRecord {
     id: string;
     name: string;
-    type: 'bus' | 'driver' | 'stop' | 'route';
+    type: "bus" | "driver" | "stop" | "route";
     createdDate: string;
     reason: string;
   }
 
-  const [obsoleteMarks, setObsoleteMarks] = useState<Map<string, ObsoleteRecord>>(new Map());
+  const [obsoleteMarks, setObsoleteMarks] = useState<
+    Map<string, ObsoleteRecord>
+  >(new Map());
 
   // Load obsolete marks from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('obsoleteRecords');
+      const saved = localStorage.getItem("obsoleteRecords");
       if (saved) {
         const parsed = JSON.parse(saved);
         setObsoleteMarks(new Map(parsed));
       }
     } catch (error) {
-      console.error('Error loading obsolete records:', error);
+      console.error("Error loading obsolete records:", error);
     }
   }, []);
 
@@ -123,19 +132,24 @@ export function AdminPanel({
   useEffect(() => {
     try {
       const toSave = Array.from(obsoleteMarks.entries());
-      localStorage.setItem('obsoleteRecords', JSON.stringify(toSave));
+      localStorage.setItem("obsoleteRecords", JSON.stringify(toSave));
     } catch (error) {
-      console.error('Error saving obsolete records:', error);
+      console.error("Error saving obsolete records:", error);
     }
   }, [obsoleteMarks]);
 
-  const markObsolete = (id: string, type: 'bus' | 'driver' | 'stop' | 'route', name: string, reason: string = '') => {
+  const markObsolete = (
+    id: string,
+    type: "bus" | "driver" | "stop" | "route",
+    name: string,
+    reason: string = "",
+  ) => {
     const newMarks = new Map(obsoleteMarks);
     newMarks.set(id, {
       id,
       name,
       type,
-      createdDate: new Date().toISOString().split('T')[0],
+      createdDate: new Date().toISOString().split("T")[0],
       reason,
     });
     setObsoleteMarks(newMarks);
@@ -180,10 +194,28 @@ export function AdminPanel({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[1100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col">
+    <div
+      className={
+        isFullScreen
+          ? "w-full h-full flex flex-col"
+          : "fixed inset-0 bg-black/50 z-[1100] flex items-center justify-center p-4"
+      }
+    >
+      <div
+        className={
+          isFullScreen
+            ? "w-full h-full flex flex-col bg-slate-50"
+            : "bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col"
+        }
+      >
         {/* Header */}
-        <div className="bg-white border-b border-slate-200 p-4 rounded-t-lg">
+        <div
+          className={
+            isFullScreen
+              ? "bg-white border-b border-slate-200 p-4 flex-shrink-0"
+              : "bg-white border-b border-slate-200 p-4 rounded-t-lg"
+          }
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg">
@@ -226,7 +258,10 @@ export function AdminPanel({
                 <Route className="w-4 h-4" />
                 Rutas
               </TabsTrigger>
-              <TabsTrigger value="assignments" className="flex items-center gap-2">
+              <TabsTrigger
+                value="assignments"
+                className="flex items-center gap-2"
+              >
                 <Settings className="w-4 h-4" />
                 Asignaciones
               </TabsTrigger>
@@ -239,10 +274,12 @@ export function AdminPanel({
             {/* Buses Tab */}
             <TabsContent value="buses" className="space-y-6">
               <div className="flex justify-end">
-                <Button onClick={() => {
-                  setShowBusForm(!showBusForm);
-                  if (showBusForm) setEditingBus(null);
-                }}>
+                <Button
+                  onClick={() => {
+                    setShowBusForm(!showBusForm);
+                    if (showBusForm) setEditingBus(null);
+                  }}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   {showBusForm ? "Ocultar Formulario" : "Nuevo Bus"}
                 </Button>
@@ -256,13 +293,17 @@ export function AdminPanel({
                     setShowBusForm(false);
                     setEditingBus(null);
                   }}
-                  initialData={editingBus ? {
-                    number: editingBus.number,
-                    licensePlate: editingBus.licensePlate,
-                    capacity: editingBus.capacity,
-                    type: editingBus.type,
-                    driverId: editingBus.driver?.id,
-                  } : undefined}
+                  initialData={
+                    editingBus
+                      ? {
+                          number: editingBus.number,
+                          licensePlate: editingBus.licensePlate,
+                          capacity: editingBus.capacity,
+                          type: editingBus.type,
+                          driverId: editingBus.driver?.id,
+                        }
+                      : undefined
+                  }
                 />
               )}
 
@@ -329,10 +370,7 @@ export function AdminPanel({
                 />
               )}
 
-              <AdminRouteList
-                routes={routes}
-                onDelete={onDeleteRoute}
-              />
+              <AdminRouteList routes={routes} onDelete={onDeleteRoute} />
             </TabsContent>
 
             {/* Assignments Tab */}
@@ -364,7 +402,13 @@ export function AdminPanel({
         </div>
 
         {/* Stats Footer */}
-        <div className="bg-white border-t border-slate-200 p-4">
+        <div
+          className={
+            isFullScreen
+              ? "bg-white border-t border-slate-200 p-4 flex-shrink-0"
+              : "bg-white border-t border-slate-200 p-4"
+          }
+        >
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-semibold text-blue-600">
