@@ -563,6 +563,69 @@ export default function App() {
     }
   }
 
+  // If user is admin, show only the admin panel
+  if (isAdmin) {
+    return (
+      <div className="h-screen flex flex-col bg-slate-50">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 shadow-sm">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Bus className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="font-semibold text-lg">BusTracker Pro</h1>
+                <p className="text-xs text-slate-600">
+                  Panel de Administración
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm">
+                <UserIcon className="w-4 h-4" />
+                <span>{currentUser.name}</span>
+                <span className="text-xs bg-slate-200 px-1.5 py-0.5 rounded">
+                  {currentUser.role}
+                </span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 rounded-lg transition-colors text-sm font-medium"
+                title="Cerrar Sesión"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Salir</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Admin Panel Content */}
+        <div className="flex-1 overflow-hidden">
+          <AdminPanel
+            buses={buses}
+            drivers={drivers}
+            stops={stops}
+            routes={routes}
+            onAddBus={handleAddBus}
+            onAddDriver={handleAddDriver}
+            onAddStop={handleAddStop}
+            onAddRoute={handleAddRoute}
+            onAssignStops={handleAssignStops}
+            onDeleteBus={handleDeleteBus}
+            onDeleteDriver={handleDeleteDriver}
+            onDeleteStop={handleDeleteStop}
+            onDeleteRoute={handleDeleteRoute}
+            onEditBus={handleEditBus}
+            onClose={() => {}}
+            isFullScreen={true}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
@@ -597,15 +660,6 @@ export default function App() {
             <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
               <Navigation2 className="w-5 h-5 text-slate-700" />
             </button>
-            {isAdmin && (
-              <button
-                onClick={() => setShowAdmin(true)}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                title="Admin Panel"
-              >
-                <Settings className="w-5 h-5 text-slate-700" />
-              </button>
-            )}
             {currentUser?.role === "passenger" && (
               <button
                 onClick={() => setShowBusBoarding(true)}
@@ -869,37 +923,6 @@ export default function App() {
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
-      )}
-
-      {/* Admin Panel */}
-      {showAdmin && (
-        <AdminPanel
-          buses={buses}
-          drivers={drivers}
-          stops={stops}
-          routes={routes}
-          onAddBus={handleAddBus}
-          onAddDriver={handleAddDriver}
-          onAddStop={handleAddStop}
-          onAddRoute={handleAddRoute}
-          onAssignStops={handleAssignStops}
-          onDeleteBus={handleDeleteBus}
-          onDeleteDriver={handleDeleteDriver}
-          onDeleteStop={handleDeleteStop}
-          onDeleteRoute={handleDeleteRoute}
-          onEditBus={handleEditBus}
-          onClose={() => setShowAdmin(false)}
-        />
-      )}
-
-      {/* Admin Button */}
-      {isAdmin && !showAdmin && (
-        <Button
-          className="fixed bottom-20 right-4 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg z-50"
-          onClick={() => setShowAdmin(true)}
-        >
-          <Settings className="w-5 h-5" />
-        </Button>
       )}
 
       {/* User Panel */}
