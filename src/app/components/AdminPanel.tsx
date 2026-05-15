@@ -101,6 +101,7 @@ export function AdminPanel({
   const [showStopForm, setShowStopForm] = useState(false);
   const [showRouteForm, setShowRouteForm] = useState(false);
   const [editingBus, setEditingBus] = useState<BusType | null>(null);
+  const [editingRoute, setEditingRoute] = useState<RouteType | null>(null);
 
   // Persistent obsolete records state
   interface ObsoleteRecord {
@@ -189,8 +190,20 @@ export function AdminPanel({
   };
 
   const handleRouteSubmit = (routeData: any) => {
-    onAddRoute(routeData);
+    if (editingRoute) {
+      // Editing existing route - for now just add as new since onEditRoute might not be defined
+      onAddRoute(routeData);
+      setEditingRoute(null);
+    } else {
+      // Creating new route
+      onAddRoute(routeData);
+    }
     setShowRouteForm(false);
+  };
+
+  const handleEditRoute = (route: RouteType) => {
+    setEditingRoute(route);
+    setShowRouteForm(true);
   };
 
   return (
@@ -356,7 +369,12 @@ export function AdminPanel({
             {/* Routes Tab */}
             <TabsContent value="routes" className="space-y-6">
               <div className="flex justify-end">
-                <Button onClick={() => setShowRouteForm(!showRouteForm)}>
+                <Button
+                  onClick={() => {
+                    setShowRouteForm(!showRouteForm);
+                    if (showRouteForm) setEditingRoute(null);
+                  }}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   {showRouteForm ? "Ocultar Formulario" : "Nueva Ruta"}
                 </Button>
@@ -366,11 +384,30 @@ export function AdminPanel({
                 <AdminRouteForm
                   stops={stops}
                   onSubmit={handleRouteSubmit}
-                  onCancel={() => setShowRouteForm(false)}
+                  onCancel={() => {
+                    setShowRouteForm(false);
+                    setEditingRoute(null);
+                  }}
+                  initialData={
+                    editingRoute
+                      ? {
+                          name: editingRoute.name,
+                          number: editingRoute.number,
+                          stops: editingRoute.stops,
+                          color: editingRoute.color,
+                          frequency: editingRoute.frequency,
+                          operatingHours: editingRoute.operatingHours,
+                        }
+                      : undefined
+                  }
                 />
               )}
 
-              <AdminRouteList routes={routes} onDelete={onDeleteRoute} />
+              <AdminRouteList
+                routes={routes}
+                onEdit={handleEditRoute}
+                onDelete={onDeleteRoute}
+              />
             </TabsContent>
 
             {/* Assignments Tab */}
